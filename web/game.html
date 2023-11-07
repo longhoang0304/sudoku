@@ -3,9 +3,175 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+  <link rel="stylesheet" type="text/css" href="css/base.css" />
+  <link rel="stylesheet" type="text/css" href="css/game.css" />
+  <title>Sudoku</title>
 </head>
 <body>
-  
+  <div id="main">
+    <div id="header">
+      <div class="header__item">&lt; Back</div>
+      <div class="header__item">New Game</div>
+    </div>
+    <div id="status">
+      <div class="status__item">
+        <div>Date</div>
+        <div>Nov 9th</div>
+      </div>
+      <div class="status__item">
+        <div>Difficulty</div>
+        <div>Hard</div>
+      </div>
+      <div class="status__item">
+        <div>Score</div>
+        <div>999</div>
+      </div>
+      <div class="status__item">
+        <div>Mistake</div>
+        <div>0/0</div>
+      </div>
+      <div class="status__item">
+        <div>Time</div>
+        <div>00:00</div>
+      </div>
+    </div>
+    <div id="game">
+      <div data-row="1" class="game__row">
+        <div data-col="1" class="game__column">
+          <div data-cell="1" class="game__cell">1</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+        <div data-col="2" class="game__column">
+          <div data-cell="1" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+        <div data-col="3" class="game__column">
+          <div data-cell="1" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+      </div>
+      <div data-row="2" class="game__row">
+        <div data-col="1" class="game__column">
+          <div data-cell="1" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+        <div data-col="2" class="game__column">
+          <div data-cell="1" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+        <div data-col="3" class="game__column">
+          <div data-cell="1" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+      </div>
+      <div data-row="3" class="game__row">
+        <div data-col="1" class="game__column">
+          <div data-cell="1" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+        <div data-col="2" class="game__column">
+          <div data-cell="1" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+        <div data-col="3" class="game__column">
+          <div data-cell="1" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="2" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="3" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="4" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="5" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="6" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="7" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="8" class="game__cell">&nbsp;&nbsp;</div>
+          <div data-cell="9" class="game__cell">&nbsp;&nbsp;</div>
+        </div>
+      </div>
+    </div>
+    <div id="actions">
+      <div class="actions__item">
+        <img src="imgs/undo.svg">
+        <div>Undo</div>
+      </div>
+      <div class="actions__item">
+        <img src="imgs/erase.svg">
+        <div>Erase</div>
+      </div>
+      <div class="actions__item">
+        <img src="imgs/pencil.svg">
+        <div>Notes</div>
+      </div>
+      <div class="actions__item">
+        <img src="imgs/hint.svg">
+        <div>Hint</div>
+      </div>
+    </div>
+    <div id="numbers">
+      <div class="numbers__item">1</div>
+      <div class="numbers__item">2</div>
+      <div class="numbers__item">3</div>
+      <div class="numbers__item">4</div>
+      <div class="numbers__item">5</div>
+      <div class="numbers__item">6</div>
+      <div class="numbers__item">7</div>
+      <div class="numbers__item">8</div>
+      <div class="numbers__item">9</div>
+    </div>
+  </div>
 </body>
 </html>
