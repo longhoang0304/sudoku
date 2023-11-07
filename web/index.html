@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+  <link rel="stylesheet" type="text/css" href="css/base.css" />
+  <link rel="stylesheet" type="text/css" href="css/index.css" />
+  <script src="scripts/index.js"></script>
+  <title>Sudoku</title>
+</head>
+<body>
+  <div id="main">
+    <div id="menu-island">
+      <h1>Sudoku</h1>
+      <div class="menu-island_item" onclick="toggleDifficultyMenu()">
+        New Game
+      </div>
+      <div class="menu-island_item">
+        Daily Challenge
+      </div>
+      <div class="menu-island_item-simple">
+        <div>Statistic</div>
+        <div>Settings</div>
+        <div>Solver</div>
+      </div>
+    </div>
+    <div id="difficult-popup" class="off">
+      <h1>Difficulty</h1>
+      <div class="difficult-popup_item">
+        Easy
+      </div>
+      <div class="difficult-popup_item">
+        Normal
+      </div>
+      <div class="difficult-popup_item">
+        Hard
+      </div>
+      <div class="difficult-popup_item">
+        Expert
+      </div>
+      <div class="difficult-popup_item">
+        Master
+      </div>
+      <div class="difficult-popup_item-simple">
+        <div onclick="toggleDifficultyMenu()">Back</div>
+      </div>
+    </div>
+    
+  </div>
+</body>
+</html>

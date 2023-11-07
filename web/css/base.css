@@ -1,0 +1,11 @@
+* {
+  font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+  --base-color: #325aaf;
+  --base-color-light: #7091d5;
+  --base-color-dark: rgb(27,66,149);
+}
+
+body {
+  margin: unset;
+  padding: unset;
+}
