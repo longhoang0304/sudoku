@@ -5,15 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" type="text/css" href="css/normalize.css" />
   <link rel="stylesheet" type="text/css" href="css/base.css" />
+  <link rel="stylesheet" type="text/css" href="css/difficulty-popup.css" />
   <link rel="stylesheet" type="text/css" href="css/index.css" />
-  <script src="scripts/index.js"></script>
+  <script src="scripts/views/difficulty-popup-view.js"></script>
+  <script src="scripts/views/home-view.js"></script>
   <title>Sudoku</title>
 </head>
 <body>
   <div id="main">
     <div id="menu-island">
       <h1>Sudoku</h1>
-      <div class="menu-island_item" onclick="toggleDifficultyMenu()">
+      <div class="menu-island_item">
         New Game
       </div>
       <div class="menu-island_item">
@@ -25,28 +27,27 @@
         <div>Solver</div>
       </div>
     </div>
-    <div id="difficult-popup" class="off">
+    <div id="difficulty-popup" class="off">
       <h1>Difficulty</h1>
-      <div class="difficult-popup_item">
+      <div class="difficulty-popup__item">
         Easy
       </div>
-      <div class="difficult-popup_item">
-        Normal
+      <div class="difficulty-popup__item">
+        Medium
       </div>
-      <div class="difficult-popup_item">
+      <div class="difficulty-popup__item">
         Hard
       </div>
-      <div class="difficult-popup_item">
+      <div class="difficulty-popup__item">
         Expert
       </div>
-      <div class="difficult-popup_item">
+      <div class="difficulty-popup__item">
         Master
       </div>
-      <div class="difficult-popup_item-simple">
-        <div onclick="toggleDifficultyMenu()">Back</div>
+      <div class="difficulty-popup__item-simple">
+        <div>Back</div>
       </div>
     </div>
-    
   </div>
 </body>
 </html>

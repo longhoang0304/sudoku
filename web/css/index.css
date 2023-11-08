@@ -6,7 +6,7 @@
   position: relative;
 }
 
-#main > div {
+#main > #menu-island {
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -20,7 +20,7 @@
   min-height: 500px;
 }
 
-#menu-island > div, #difficult-popup > div {
+#menu-island > div {
   width: 20em;
   height: 2em;
   margin: 0.5em;
@@ -70,49 +70,6 @@ h1, h2 {
   font-size: 1.25rem;
   color: var(--base-color-dark);
   transition: 0.25s ease;
-}
-
-#difficult-popup {
-  width: 30em;
-  height: calc(100%/3);
-  position: absolute;
-  z-index: 999;
-  background-color: white;
-}
-
-#difficult-popup h1 {
-  text-align: center;
-}
-
-.difficult-popup_item {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: var(--base-color);
-  border-radius: 2em;
-  border: 1px solid var(--base-color);
-  transition: 0.25s ease;
-}
-
-.difficult-popup_item:hover {
-  background: var(--base-color);
-  color: white;
-  font-size: 1.1rem;
-  transition: 0.25s ease;
-}
-
-.on {
-  visibility: visible;
-  opacity: 1;
-  animation: popup-animation 0.25s ease;
-  transition: 0.25s ease;
-}
-
-
-.off {
-  visibility: hidden;
-  opacity: 0;
 }
 
 
