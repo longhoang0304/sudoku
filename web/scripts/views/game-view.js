@@ -37,14 +37,15 @@ class GameView {
 
   renderUI() {
     this.renderStatus()
-    const board = this.#gamevm.ActiveSudokuBoard
-    this.renderBoard(board)
     this.renderActiveCell(null)
+
+    if (this.#gamevm.Paused) this.renderPausedGame()
+    else this.renderResumedGame()
   }
 
   renderTime = () => {
     const [hour, minute, second] = this.#gamevm.Duration
-    const timeEle = document.getElementById('status-time')
+    const timeEle = document.getElementById('status-time').children[0]
     let time = ""
 
     if (hour) {
@@ -115,6 +116,32 @@ class GameView {
     this.activeSelectedCell([row, col])
   }
 
+  renderPausedGame = () => {
+    const timeControlBlock = document.getElementById('status-time').children[1]
+    timeControlBlock.children[0].src = 'imgs/play.svg'
+    timeControlBlock.children[0].alt = 'Resume'
+
+    const gamePauseScreen = document.getElementById('game-paused')
+    gamePauseScreen.classList.remove('hide')
+
+    const board = [...new Array(9)].map(_ => new Array(9))
+    this.removeSelectedCell(this.#gamevm.ActiveCell)
+    this.renderBoard(board)
+  }
+
+  renderResumedGame = () => {
+    const timeControlBlock = document.getElementById('status-time').children[1]
+    timeControlBlock.children[0].src = 'imgs/pause.svg'
+    timeControlBlock.children[0].alt = 'Pause'
+
+    const gamePauseScreen = document.getElementById('game-paused')
+    gamePauseScreen.classList.add('hide')
+
+    const board = this.#gamevm.ActiveSudokuBoard
+    this.activeSelectedCell(this.#gamevm.ActiveCell)
+    this.renderBoard(board)
+  }
+
   // ===================================
   // event handlers
 
@@ -126,18 +153,43 @@ class GameView {
     this.registerBackToHomeBtnPressedHandler()
     this.registerNumpadPressedHandler()
     this.registerActionPressedHandler()
+    this.registerTimeControlPressed()
+  }
+
+  timeControlPressed = () => {
+    if (this.#gamevm.Paused) {
+      this.#gamevm.ResumeGame()
+      return
+    }
+    this.#gamevm.PauseGame()
+  }
+
+  registerTimeControlPressed = () => {
+    const timeBlock = document.getElementById('status-time')
+    timeBlock.onclick = after(this.timeControlPressed, 500)
+
+    const gamePauseScreen = document.getElementById('game-paused')
+    gamePauseScreen.onclick = after(this.timeControlPressed, 500)
   }
 
   erasePressed = () => {
     this.#gamevm.UpdateCell(0)
   }
 
-  registerActionPressedHandler() {
-    const actions = document.getElementById('actions')
-    // erase
-    actions.children[1].onclick = after(this.erasePressed, 250)
+  undoPressed = () => {
+    this.#gamevm.Undo()
   }
 
+  registerActionPressedHandler() {
+    const actions = document.getElementById('actions')
+    const [undoBtn, eraseBtn, ..._] = actions.children
+
+    //undo
+    undoBtn.onclick = after(this.undoPressed, 250)
+
+    // erase
+    eraseBtn.onclick = after(this.erasePressed, 250)
+  }
 
   numpadPressed = (evt) => {
     const { currentTarget } = evt;
@@ -230,6 +282,8 @@ class GameView {
     this.#gamevm.AddPropertyChangedListener('Duration', this.renderTime)
     this.#gamevm.AddPropertyChangedListener('ActiveCellValue', this.renderCell)
     this.#gamevm.AddPropertyChangedListener('Mistakes', this.renderMistakeStatus)
+    this.#gamevm.AddPropertyChangedListener('Paused', this.renderPausedGame)
+    this.#gamevm.AddPropertyChangedListener('Resumed', this.renderResumedGame)
   }
 
   // ===================================

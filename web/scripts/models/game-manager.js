@@ -40,9 +40,14 @@ class GameManager {
     return this.#sudoku.Difficulty
   }
 
+  get Paused() {
+    return this.#paused
+  }
+
   set Duration(newValue) {
     this.#duration = newValue
   }
+
 
   // ===============
   // === HANDLER ===
@@ -67,10 +72,34 @@ class GameManager {
     this.#activeCell = [row, col]
   }
 
-  UpdateCell = (cellValue) => {
+  UpdateCell = (newValue) => {
     const [row, col] = this.#activeCell
     if (!this.#sudoku.CanUpdateCellValue(row, col)) return false
-    this.#sudoku.UpdateCellValue(row, col, cellValue)
+
+    const prevValue = this.CurrentBoard[row][col]
+    if (prevValue === newValue) return false
+
+    this.#sudoku.UpdateCellValue(row, col, newValue)
+
+    const state = {
+      activeCell: this.#activeCell,
+      prevValue,
+      newValue,
+    }
+    this.#histories.push(state)
+
+    return true
+  }
+
+  Undo = () => {
+    if (!this.#histories.length) return false
+
+    const state = this.#histories.pop() // recover the latest state
+
+    this.SelectCell(...state.activeCell)
+    // don't call UpdateCell because it will append to history
+    this.#sudoku.UpdateCellValue(...state.activeCell, state.prevValue)
+
     return true
   }
 

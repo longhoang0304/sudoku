@@ -18,6 +18,26 @@
   border: 1px solid var(--black);
   box-sizing: border-box;
   user-select: none;
+  position: relative;
+}
+
+#game-paused.hide {
+  display: none;
+}
+
+#game-paused {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  z-index: 998;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  cursor: pointer;
+}
+
+#game-paused img {
+  width: 5rem;
 }
 
 .game__row {
@@ -109,6 +129,25 @@
 
 #status > div:last-child {
   text-align: right;
+}
+
+#status-time {
+  display: flex;
+}
+
+#status-time > div:last-child {
+  display: flex;
+  justify-content: center;
+}
+
+#status-time img {
+  width: 1.25rem;
+}
+
+#status-time > div:first-child > div:last-child {
+  color: black;
+  font-weight: normal;
+  font-size: 1.25rem;
 }
 
 .status__item > div:first-child {

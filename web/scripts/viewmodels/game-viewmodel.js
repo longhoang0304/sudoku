@@ -32,6 +32,10 @@ class GameViewModel extends Observable {
     return this.#gameManager.Difficulty
   }
 
+  get Paused() {
+    return this.#gameManager.Paused
+  }
+
   get Duration() {
     let duration = this.#gameManager.Duration
 
@@ -65,4 +69,24 @@ class GameViewModel extends Observable {
     if (!this.#gameManager.UpdateCell(cellValue)) return
     this.PropertyChanged('ActiveCellValue')
   }
+
+  Undo = () => {
+    const prevValue = this.#gameManager.ActiveCell
+    if(!this.#gameManager.Undo()) return
+    this.PropertyChanged('ActiveCell', prevValue)
+    this.PropertyChanged('ActiveCellValue')
+  }
+
+  PauseGame = () => {
+    this.#gameManager.PauseGame()
+    clearInterval(this.#durationTracker)
+    this.PropertyChanged('Paused')
+  }
+
+  ResumeGame = () => {
+    this.#gameManager.ResumeGame()
+    this.#durationTracker = setInterval(this.TrackDuration, 1000)
+    this.PropertyChanged('Resumed')
+  }
+
 }
