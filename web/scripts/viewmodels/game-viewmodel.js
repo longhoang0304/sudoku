@@ -55,6 +55,7 @@ class GameViewModel extends Observable {
   }
 
   SelectCell = (row, col) => {
+    this.Paused && this.ResumeGame()
     const prevValue = this.#gameManager.ActiveCell
     this.#gameManager.SelectCell(row, col)
     this.PropertyChanged('ActiveCell', prevValue)
@@ -66,11 +67,13 @@ class GameViewModel extends Observable {
   }
 
   UpdateCell = (cellValue) => {
+    this.Paused && this.ResumeGame()
     if (!this.#gameManager.UpdateCell(cellValue)) return
     this.PropertyChanged('ActiveCellValue')
   }
 
   Undo = () => {
+    this.Paused && this.ResumeGame()
     const prevValue = this.#gameManager.ActiveCell
     if(!this.#gameManager.Undo()) return
     this.PropertyChanged('ActiveCell', prevValue)

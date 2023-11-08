@@ -204,14 +204,31 @@ class GameView {
   }
 
   registerKeyPressedHandler = () => {
-    document.addEventListener('keydown', after(this.handleKeyPress, 250))
+    document.addEventListener('keydown', this.handleKeyPress)
   }
 
   handleKeyPress = (evt) => {
     const { keyCode } = evt;
+
+    if (keyCode === 32) {
+      this.timeControlPressed()
+      return
+    }
+
+    if (keyCode >= 37 && keyCode <= 40) {
+      let [row, col] = this.#gamevm.ActiveCell
+      if (keyCode === 38) row = Math.max(0, row - 1)
+      if (keyCode === 40) row = Math.min(8, row + 1)
+      if (keyCode === 37) col = Math.max(0, col - 1)
+      if (keyCode === 39) col = Math.min(8, col + 1)
+      this.#gamevm.SelectCell(row, col)
+      return
+    }
+
     if (keyCode === 8 || keyCode === 46) { // backspace and delete
       this.#gamevm.UpdateCell(0)
     }
+
     if (keyCode < 49 || keyCode > 57) return
     this.#gamevm.UpdateCell(keyCode - 48)
   }
