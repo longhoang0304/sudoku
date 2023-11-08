@@ -5,12 +5,12 @@ class Sudoku {
   #difficulty
 
   static #DIFFICULTY_MAP = {
-    'easy': [40, 45],
-    'medium': [45, 50],
-    'normal': [45, 50],
-    'hard': [50, 55],
-    'expert': [55, 60],
-    'master': [60, 70],
+    'easy': [35, 40],
+    'medium': [40, 45],
+    'hard': [45, 50],
+    'expert': [50, 55],
+    'master': [55, 60],
+    'legendary': [60, 65],
   }
 
   constructor(difficulty) {

@@ -62,11 +62,11 @@
   color: var(--base-color);
 }
 
-.difficulty-popup__item-simple div {
+.difficulty-popup__item-simple {
   transition: 0.25s ease;
 }
 
-.difficulty-popup__item-simple div:hover {
+.difficulty-popup__item-simple:hover {
   font-size: 1.25rem;
   color: var(--base-color-dark);
   transition: 0.25s ease;

@@ -10,7 +10,6 @@ function after(fn, timeout) {
     cancelTk = setTimeout(() => cancelTk = null, timeout)
   }
 }
-
 function randInt(min=0, max=9999999) {
   return Math.floor(Math.random() * (max - min) + min)
 }

@@ -13,7 +13,22 @@ class GameViewModel extends Observable {
   }
 
   get ActiveCell() {
-    return this.#gameManager.ActiveCell
+    const [row, col] = this.#gameManager.ActiveCell
+    return {
+      row,
+      col,
+    }
+  }
+
+  get CellData() {
+    const { row, col } = this.ActiveCell
+    const data = this.#gameManager.CellData[row][col]
+
+    return {
+      row,
+      col,
+      data,
+    }
   }
 
   get Mistakes() {
@@ -57,6 +72,10 @@ class GameViewModel extends Observable {
     return [hour, minute, second]
   }
 
+  get Mode() {
+    return this.#gameManager.Mode
+  }
+
   NewGame() {
     this.#gameManager.NewGame()
     this.#durationTracker = setInterval(this.TrackDuration, 1000)
@@ -64,7 +83,7 @@ class GameViewModel extends Observable {
 
   SelectCell = (row, col) => {
     this.Paused && this.ResumeGame()
-    const prevValue = this.#gameManager.ActiveCell
+    const prevValue = this.ActiveCell
     this.#gameManager.SelectCell(row, col)
     this.PropertyChanged('ActiveCell', prevValue)
   }
@@ -74,20 +93,22 @@ class GameViewModel extends Observable {
     this.PropertyChanged('Duration')
   }
 
-  UpdateCell = (cellValue) => {
+  HandleCellData = (cellData) => {
     this.Paused && this.ResumeGame()
-    if (!this.#gameManager.UpdateCell(cellValue)) return
-    this.PropertyChanged('ActiveCellValue')
+    const prevValue = this.ActiveCell
+    if (!this.#gameManager.HandleCellData(cellData)) return
     this.PropertyChanged('AvailableUndo')
+    this.PropertyChanged('CellData')
+    this.PropertyChanged('ActiveCell', prevValue)
   }
 
   Undo = () => {
     this.Paused && this.ResumeGame()
-    const prevValue = this.#gameManager.ActiveCell
+    const prevValue = this.ActiveCell
     if(!this.#gameManager.Undo()) return
     this.PropertyChanged('AvailableUndo')
+    this.PropertyChanged('CellData')
     this.PropertyChanged('ActiveCell', prevValue)
-    this.PropertyChanged('ActiveCellValue')
   }
 
   PauseGame = () => {
@@ -103,15 +124,16 @@ class GameViewModel extends Observable {
   }
 
   Hint = () => {
-    const prevValue = this.#gameManager.ActiveCell
+    const prevValue = this.ActiveCell
     this.#gameManager.Hint()
     this.PropertyChanged('ActiveCell', prevValue)
-    this.PropertyChanged('ActiveCellValue')
+    this.PropertyChanged('CellData')
     this.PropertyChanged('AvailableHints')
     this.PropertyChanged('AvailableUndo')
   }
 
-  ToggleNoteMode = () => {
-    console.log('Game mode')
+  ToggleGameMode = () => {
+    this.#gameManager.ToggleGameMode()
+    this.PropertyChanged('GameMode')
   }
 }
