@@ -1,7 +1,7 @@
 class HomeView {
   constructor() {
-    this.difficultyPopup = new DifficultyPopupView(this.goToGamePage.bind(this))
-    document.addEventListener('DOMContentLoaded', this.kickStartInitProcess.bind(this));
+    this.difficultyPopup = new DifficultyPopupView(this.goToGamePage)
+    document.addEventListener('DOMContentLoaded', this.kickStartInitProcess);
   }
 
   goToGamePage(evt) {
@@ -11,22 +11,22 @@ class HomeView {
     window.location = 'game.html'
   }
 
-  registerEventHandlerForNewGame() {
+  registerNewGameHandler = () => {
     const mainIsland = document.getElementById('menu-island')
     const newGameEle = mainIsland.children[1]
     newGameEle.onclick = this.difficultyPopup.toggleDifficultyMenu.bind(this.difficultyPopup)
   }
 
-  registerEventHandlerForBackBtn() {
+  registerBackBtnPressedHandler = () => {
     const diffiPopup = document.getElementById('difficulty-popup')
     const backBtn = diffiPopup.children.item(diffiPopup.children.length - 1)
     backBtn.onclick = this.difficultyPopup.toggleDifficultyMenu.bind(this.difficultyPopup)
   }
 
-  kickStartInitProcess() {
-    this.registerEventHandlerForNewGame()
-    this.registerEventHandlerForBackBtn()
+  kickStartInitProcess = () => {
+    this.registerNewGameHandler()
+    this.registerBackBtnPressedHandler()
   }
 }
 
-const homeView = new HomeView()
+new HomeView()

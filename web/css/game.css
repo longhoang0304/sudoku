@@ -7,6 +7,7 @@
   flex-direction: column;
   justify-content: center;
   overflow: hidden;
+  position: relative;
 }
 
 #game {
@@ -16,6 +17,7 @@
   aspect-ratio: 1/1;
   border: 1px solid var(--black);
   box-sizing: border-box;
+  user-select: none;
 }
 
 .game__row {
@@ -41,8 +43,12 @@
   aspect-ratio: 1/1;
 }
 
-.game__cell.actived {
+.game__cell.activated {
   background: #e2ebf3;
+}
+
+.game__cell.same-value {
+  background: #c3d7ea;
 }
 
 .game__cell.selected {
@@ -59,6 +65,10 @@
 
 .game__cell.input-wrong {
   color: #e45f6f;
+}
+
+.game__cell.hide {
+  color: transparent;
 }
 
 
@@ -91,6 +101,10 @@
 
 #status > div:first-child {
   text-align: left;
+}
+
+#status-difficulty {
+  text-transform: capitalize;
 }
 
 #status > div:last-child {

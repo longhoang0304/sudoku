@@ -15,15 +15,21 @@ class DifficultyPopupView {
 
     if (diffPopup.className === 'off') diffPopup.className = 'on'
     else diffPopup.className = 'off'
-    if (this.difficultyMenuCb) this.difficultyMenuCb(diffPopup.className)
+    if (this.difficultyMenuCb instanceof Function) this.difficultyMenuCb(diffPopup.className)
   }
 
   registerDifficultyHandler() {
+    if (!this.difficultyHandler) return
+
     const difficulties = document.getElementsByClassName('difficulty-popup__item')
-    if (!difficulties) return
+    if (!difficulties) {
+      console.warn('Not difficulty buttons are found')
+      return
+    }
     for (const difficulty of difficulties) {
       difficulty.dataset.difficulty = difficulty.innerHTML.trim().toLocaleLowerCase()
-      difficulty.onclick = this.difficultyHandler
+      difficulty.addEventListener('click', this.toggleDifficultyMenu)
+      difficulty.addEventListener('click', this.difficultyHandler)
     }
   }
 
