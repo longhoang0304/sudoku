@@ -1,10 +1,13 @@
 class GameView {
   #gamevm
+  #uiBoard
+  #difficultyPopup
+  
   constructor(gamevm) {
     this.#gamevm = gamevm
-    this.uiBoard = []
+    this.#uiBoard = []
 
-    this.difficultyPopup = new DifficultyPopupView(this.createNewGame, this.handleModelStateUpdated)
+    this.#difficultyPopup = new DifficultyPopupView(this.createNewGame, this.handleModelStateUpdated)
     document.addEventListener('DOMContentLoaded', this.kickStartInitProcess)
   }
 
@@ -18,7 +21,7 @@ class GameView {
   }
 
   collectBoard() {
-    this.uiBoard = []
+    this.#uiBoard = []
     const rows = document.getElementsByClassName('game__row')
     for (const row of rows) {
       const columns = row.children
@@ -30,7 +33,7 @@ class GameView {
             cells.push(ele)
           }
         }
-        this.uiBoard.push(cells)
+        this.#uiBoard.push(cells)
       }
     }
   }
@@ -38,9 +41,29 @@ class GameView {
   renderUI() {
     this.renderStatus()
     this.renderActiveCell(null)
+    this.renderActions()
 
     if (this.#gamevm.Paused) this.renderPausedGame()
     else this.renderResumedGame()
+  }
+
+  renderAvailableUndo = () => {
+    const avaiUndo = this.#gamevm.AvailableUndo
+    const [undoBtn] = document.getElementsByClassName('actions__item')
+
+    undoBtn.children[0].innerText = avaiUndo
+  }
+
+  renderAvailableHints = () => {
+    const avaiHints = this.#gamevm.AvailableHints
+    const [undoBtn, eraseBtn, noteBtn, hintBtn] = document.getElementsByClassName('actions__item')
+
+    hintBtn.children[0].innerText = avaiHints
+  }
+
+  renderActions = () => {
+    this.renderAvailableUndo()
+    this.renderAvailableHints()
   }
 
   renderTime = () => {
@@ -87,7 +110,7 @@ class GameView {
   renderCell = () => {
     const [row, col] = this.#gamevm.ActiveCell
     const cellValue = this.#gamevm.ActiveSudokuBoard[row][col]
-    const cellElement = this.uiBoard[row][col]
+    const cellElement = this.#uiBoard[row][col]
 
     cellElement.innerText = cellValue
     if (cellValue) {
@@ -100,9 +123,9 @@ class GameView {
   renderBoard = (sudokuBoard) => {
     for (let i = 0; i < 9; i++) {
       for (let j = 0; j < 9; j++) {
-        this.uiBoard[i][j].innerText = sudokuBoard[i][j] || '_' 
-        if (!sudokuBoard[i][j]) this.uiBoard[i][j].classList.add('hide')
-        else this.uiBoard[i][j].classList.remove('hide')
+        this.#uiBoard[i][j].innerText = sudokuBoard[i][j] || '_' 
+        if (!sudokuBoard[i][j]) this.#uiBoard[i][j].classList.add('hide')
+        else this.#uiBoard[i][j].classList.remove('hide')
       }
     }
   }
@@ -180,15 +203,29 @@ class GameView {
     this.#gamevm.Undo()
   }
 
+  hintPressed = () => {
+    this.#gamevm.Hint()
+  }
+
+  notePressed = () => {
+    this.#gamevm.ToggleNoteMode()
+  }
+
   registerActionPressedHandler() {
     const actions = document.getElementById('actions')
-    const [undoBtn, eraseBtn, ..._] = actions.children
+    const [undoBtn, eraseBtn, noteBtn, hintBtn] = actions.children
 
     //undo
     undoBtn.onclick = after(this.undoPressed, 250)
 
     // erase
     eraseBtn.onclick = after(this.erasePressed, 250)
+
+    //note
+    noteBtn.onclick = after(this.notePressed, 250)
+
+    // hint
+    hintBtn.onclick = after(this.hintPressed, 250)
   }
 
   numpadPressed = (evt) => {
@@ -204,26 +241,47 @@ class GameView {
   }
 
   registerKeyPressedHandler = () => {
-    document.addEventListener('keydown', this.handleKeyPress)
+    document.addEventListener('keydown', after(this.handleCellKeyboardInput, 250))
+    document.addEventListener('keydown', after(this.handlePauseKeyboardInput, 250))
+    document.addEventListener('keydown', after(this.handleHintKeyboardInput, 250))
+    document.addEventListener('keydown', this.handleMovementKeyboardInput)
   }
 
-  handleKeyPress = (evt) => {
+  handleHintKeyboardInput = (evt) => {
+    const {keyCode} = evt;
+
+    if (keyCode !== 0) {
+      return
+    }
+    this.hintPressed()
+  }
+
+  handlePauseKeyboardInput = (evt) => {
+    const {keyCode} = evt;
+
+    if (keyCode !== 32) {
+      return
+    }
+    this.timeControlPressed()
+  }
+
+  handleMovementKeyboardInput = (evt) => {
     const { keyCode } = evt;
 
-    if (keyCode === 32) {
-      this.timeControlPressed()
+    if (keyCode < 37 || keyCode > 40) {
       return
     }
 
-    if (keyCode >= 37 && keyCode <= 40) {
-      let [row, col] = this.#gamevm.ActiveCell
-      if (keyCode === 38) row = Math.max(0, row - 1)
-      if (keyCode === 40) row = Math.min(8, row + 1)
-      if (keyCode === 37) col = Math.max(0, col - 1)
-      if (keyCode === 39) col = Math.min(8, col + 1)
-      this.#gamevm.SelectCell(row, col)
-      return
-    }
+    let [row, col] = this.#gamevm.ActiveCell
+    if (keyCode === 38) row = Math.max(0, row - 1)
+    if (keyCode === 40) row = Math.min(8, row + 1)
+    if (keyCode === 37) col = Math.max(0, col - 1)
+    if (keyCode === 39) col = Math.min(8, col + 1)
+    this.#gamevm.SelectCell(row, col)
+  }
+
+  handleCellKeyboardInput = (evt) => {
+    const { keyCode } = evt;
 
     if (keyCode === 8 || keyCode === 46) { // backspace and delete
       this.#gamevm.UpdateCell(0)
@@ -234,7 +292,7 @@ class GameView {
   }
 
   registerCellPressedHandler = () => {
-    this.uiBoard.forEach(row => row.forEach(ele => ele.addEventListener('click', this.activeCell)))
+    this.#uiBoard.forEach(row => row.forEach(ele => ele.addEventListener('click', this.activeCell)))
   }
 
   activeCell = (evt) => {
@@ -252,23 +310,23 @@ class GameView {
   registerNewGameHandler = () => {
     const header = document.getElementById('header')
     const newGameEle = header.children[1]
-    newGameEle.onclick = this.difficultyPopup.toggleDifficultyMenu
+    newGameEle.onclick = this.#difficultyPopup.toggleDifficultyMenu
   }
 
   registerBackBtnPressedHandler = () => {
     const diffiPopup = document.getElementById('difficulty-popup')
     const backBtn = diffiPopup.children.item(diffiPopup.children.length - 1)
-    backBtn.onclick = this.difficultyPopup.toggleDifficultyMenu
-  }
-
-  registerBackToHomeBtnPressedHandler = () => {
-    const header = document.getElementById('header')
-    header.children[0].onclick = this.backToHome
+    backBtn.onclick = this.#difficultyPopup.toggleDifficultyMenu
   }
 
   backToHome() {
     // push pause game event
     window.location = 'index.html'
+  }
+
+  registerBackToHomeBtnPressedHandler = () => {
+    const header = document.getElementById('header')
+    header.children[0].onclick = this.backToHome
   }
 
   createNewGame = (evt) => {
@@ -301,17 +359,20 @@ class GameView {
     this.#gamevm.AddPropertyChangedListener('Mistakes', this.renderMistakeStatus)
     this.#gamevm.AddPropertyChangedListener('Paused', this.renderPausedGame)
     this.#gamevm.AddPropertyChangedListener('Resumed', this.renderResumedGame)
+    this.#gamevm.AddPropertyChangedListener('AvailableHints', this.renderAvailableHints)
+    this.#gamevm.AddPropertyChangedListener('AvailableUndo', this.renderAvailableUndo)
+
   }
 
   // ===================================
   // helpers
   removeSelectedCell = ([row, col]) => {
-    this.uiBoard[row][col].classList.remove('selected')
-    for (const ele of this.uiBoard[row]) {
+    this.#uiBoard[row][col].classList.remove('selected')
+    for (const ele of this.#uiBoard[row]) {
       ele.classList.remove('activated')
     }
     for (let i = 0; i < 9; i++) {
-      const ele = this.uiBoard[i][col]
+      const ele = this.#uiBoard[i][col]
       ele.classList.remove('activated')
     }
   
@@ -319,20 +380,20 @@ class GameView {
     const baseCol = Math.floor(col / 3) * 3
     for (let i = 0; i < 3; i++) {
         for (let j = 0; j < 3; j++) {
-        const ele = this.uiBoard[baseRow + i][baseCol + j]
+        const ele = this.#uiBoard[baseRow + i][baseCol + j]
         ele.classList.remove('activated')
       }
     }
   }
 
   activeSelectedCell = ([row, col]) => {
-    this.uiBoard[row][col].classList.add('selected')
-    for (const ele of this.uiBoard[row]) {
+    this.#uiBoard[row][col].classList.add('selected')
+    for (const ele of this.#uiBoard[row]) {
       ele.classList.add('activated')
     }
   
     for (let i = 0; i < 9; i++) {
-      const ele = this.uiBoard[i][col]
+      const ele = this.#uiBoard[i][col]
       ele.classList.add('activated')
     }
   
@@ -340,12 +401,11 @@ class GameView {
     const baseCol = Math.floor(col / 3) * 3
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
-        const ele = this.uiBoard[baseRow + i][baseCol + j]
+        const ele = this.#uiBoard[baseRow + i][baseCol + j]
         ele.classList.add('activated')
       }
     }
   }
 }
 
-const normalGameVM = new GameViewModel(new GameManager())
-new GameView(normalGameVM)
+new GameView(new GameViewModel(new GameManager()))

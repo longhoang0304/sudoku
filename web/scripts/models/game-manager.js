@@ -3,12 +3,13 @@ class GameManager {
   #date = null
   #histories = []
   #mistakes = 0
-  #hints = []
+  #hints = 0
   #activeCell = [0, 0]
   #duration = 0
   #score = 0
   #paused = false
   #allowedMistakes = 5
+  #allowedHints = 5
 
   // ============
   // == GETTER ==
@@ -44,6 +45,14 @@ class GameManager {
     return this.#paused
   }
 
+  get AvailableHints() {
+    return this.#allowedHints - this.#hints
+  }
+
+  get AvailableUndo() {
+    return this.#histories.length
+  }
+
   set Duration(newValue) {
     this.#duration = newValue
   }
@@ -56,7 +65,7 @@ class GameManager {
     this.#date = new Date()
     this.#histories = []
     this.#mistakes = 0
-    this.#hints = []
+    this.#hints = 0
     this.#activeCell = [0, 0]
     this.#duration = 0
     this.#score = 0
@@ -109,6 +118,25 @@ class GameManager {
 
   ResumeGame = () => {
     this.#paused = false
+  }
+
+  Hint = () => {
+    if (this.#hints === this.#allowedHints) return
+
+    const expectedBoard = this.#sudoku.ExpectedBoard
+    const currentBoard = this.#sudoku.CurrentBoard
+    let x, y
+
+    while (true) {
+      x = randInt(0, 9)
+      y = randInt(0, 9)
+      if (currentBoard[x][y]) continue
+      break
+    }
+
+    this.#hints += 1
+    this.SelectCell(x, y)
+    this.UpdateCell(expectedBoard[x][y])
   }
 
   RestartGame = () => {

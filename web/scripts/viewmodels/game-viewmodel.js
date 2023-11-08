@@ -36,6 +36,14 @@ class GameViewModel extends Observable {
     return this.#gameManager.Paused
   }
 
+  get AvailableHints() {
+    return this.#gameManager.AvailableHints
+  }
+
+  get AvailableUndo() {
+    return this.#gameManager.AvailableUndo
+  }
+
   get Duration() {
     let duration = this.#gameManager.Duration
 
@@ -70,12 +78,14 @@ class GameViewModel extends Observable {
     this.Paused && this.ResumeGame()
     if (!this.#gameManager.UpdateCell(cellValue)) return
     this.PropertyChanged('ActiveCellValue')
+    this.PropertyChanged('AvailableUndo')
   }
 
   Undo = () => {
     this.Paused && this.ResumeGame()
     const prevValue = this.#gameManager.ActiveCell
     if(!this.#gameManager.Undo()) return
+    this.PropertyChanged('AvailableUndo')
     this.PropertyChanged('ActiveCell', prevValue)
     this.PropertyChanged('ActiveCellValue')
   }
@@ -92,4 +102,16 @@ class GameViewModel extends Observable {
     this.PropertyChanged('Resumed')
   }
 
+  Hint = () => {
+    const prevValue = this.#gameManager.ActiveCell
+    this.#gameManager.Hint()
+    this.PropertyChanged('ActiveCell', prevValue)
+    this.PropertyChanged('ActiveCellValue')
+    this.PropertyChanged('AvailableHints')
+    this.PropertyChanged('AvailableUndo')
+  }
+
+  ToggleNoteMode = () => {
+    console.log('Game mode')
+  }
 }

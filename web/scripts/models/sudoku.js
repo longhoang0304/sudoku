@@ -50,7 +50,7 @@ class Sudoku {
     for (let i = 0; i < 9; i++) {
       const row = []
       for (let j = 0; j < 9; j++) {
-        row.push(Math.floor(Math.random() * 9 + 1))
+        row.push(randInt(1, 10))
       }
       this.#expectedBoard.push(row)
     }
@@ -64,8 +64,8 @@ class Sudoku {
     }
 
     while (noCells) {
-      const x = Math.floor(Math.random() * 9)
-      const y = Math.floor(Math.random() * 9)
+      const x = randInt(0, 9)
+      const y = randInt(0, 9)
       const k = x * 9 + y
       if (removedCells.has(k)) continue
       removedCells.add(k)
@@ -78,7 +78,7 @@ class Sudoku {
 
   InitBoards() {
     const [min, max] = Sudoku.#DIFFICULTY_MAP[this.#difficulty]
-    const noCells = Math.floor(Math.random() * (max - min) + min)
+    const noCells = randInt(min, max + 1)
     
     this.genCompleteBoard()
     this.#initBoard = this.removeCells(noCells)

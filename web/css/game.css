@@ -175,9 +175,10 @@
   justify-content: center;
   cursor: pointer;
   transition: 0.25s ease;
+  position: relative;
 }
 
-.actions__item:hover {
+.actions__item:hover img, .actions__item:hover div:last-child {
   /* color: rgb(50, 90, 175); */
   filter: invert(30%) sepia(12%) saturate(6020%) hue-rotate(195deg) brightness(98%) contrast(88%);
   transition: 0.25s ease;
@@ -185,6 +186,20 @@
 
 .actions__item > img {
   width: 2rem;
+}
+
+
+.actions__item .actions__item__noti-count {
+  position: absolute;
+  border-radius: 1rem;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: bold;
+  top: 0;
+  right: -0.25rem;
+  background: var(--base-color);
+  color: white;
 }
 
 #numbers {
