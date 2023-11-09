@@ -3,19 +3,19 @@ class GameManager {
   #date = null
   #histories = []
   #mistakes = 0
-  #hints = 0
+  #usedHints = 0
   #activeCell = [0, 0]
-  #cellData = null
+  #gameBoard = null
   #duration = 0
   #score = 0
-  #paused = false
+  #status = 'playing'
   #mode = 'fill'
   #allowedMistakes = 5
   #allowedHints = 5
 
   // ============
   // == GETTER ==
-  get CurrentBoard() {
+  get ActiveSudokuBoard() {
     return this.#sudoku.CurrentBoard
   }
 
@@ -43,12 +43,12 @@ class GameManager {
     return this.#sudoku.Difficulty
   }
 
-  get Paused() {
-    return this.#paused
+  get Status() {
+    return this.#status
   }
 
   get AvailableHints() {
-    return this.#allowedHints - this.#hints
+    return this.#allowedHints - this.#usedHints
   }
 
   get AvailableUndo() {
@@ -59,8 +59,8 @@ class GameManager {
     return this.#mode
   }
 
-  get CellData() {
-    return this.#cellData
+  get GameBoard() {
+    return this.#gameBoard
   }
 
   set Duration(newValue) {
@@ -75,20 +75,73 @@ class GameManager {
     this.#date = new Date()
     this.#histories = []
     this.#mistakes = 0
-    this.#hints = 0
+    this.#usedHints = 0
     this.#activeCell = [0, 0]
     this.#duration = 0
     this.#score = 0
-    this.#paused = false
+    this.#status = 'playing'
     this.#mode = 'fill'
-    this.#cellData = [...new Array(9)].map(() => [...new Array(9)])
+    this.#gameBoard = [...new Array(9)].map(() => [...new Array(9)])
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        const isDefault = !!this.#sudoku.CurrentBoard[i][j]
+        this.#gameBoard[i][j] = {
+          data: this.#sudoku.CurrentBoard[i][j],
+          duplicated: 0,
+          correct: false,
+          type: isDefault ? 'pre-filled' : 'fill',
+        }
+      }
+    }
   }
 
-  #recordHistory(prev) {
+  #checkActiveCellMistakes = (isUndo = false) => {
     const [row, col] = this.#activeCell
+    const cellData = this.#gameBoard[row][col]
+    const duplicatedCells = this.#sudoku.SearchDuplicatedCells(row, col)
+    const expectedValue = this.#sudoku.ExpectedBoard[row][col]
+    const incorrect = cellData.data !== expectedValue
+
+    if (!isUndo) this.#mistakes += incorrect
+    cellData.correct = !incorrect
+
+    if (!duplicatedCells.length) return
+
+    cellData.duplicated += 1
+    for (const [r, c] of duplicatedCells) {
+      this.#gameBoard[r][c].duplicated += 1
+    }
+  }
+
+  #removeActiveCellMistakes() {
+    const [row, col] = this.#activeCell
+    this.#gameBoard[row][col].duplicated = 0
+    const duplicatedCells = this.#sudoku.SearchDuplicatedCells(row, col)
+
+    console.log('removeActiveCellMistakes', duplicatedCells)
+
+    for (const [r, c] of duplicatedCells) {
+      const duplicated = this.#gameBoard[r][c].duplicated
+      this.#gameBoard[r][c].duplicated = Math.max(0, duplicated  - 1)
+    }
+  }
+
+  #recordHistory = () => {
+    const [row, col] = this.#activeCell
+    const prevData = this.#gameBoard[row][col]
+    const { duplicated, correct, type, data } = prevData
     const state = {
       row, col,
-      prev,
+      prev: {
+        duplicated,
+        correct,
+        type,
+        data
+      },
+    }
+
+    if (type === 'note') {
+      state.prev.data = data && new Set([...data])
     }
     this.#histories.push(state)
   }
@@ -102,36 +155,51 @@ class GameManager {
     this.#activeCell = [row, col]
   }
 
-  HandleCellData = (cellData) => {
-    if (this.#mode === 'fill') {
-      return this.UpdateCell(cellData)
+  UpdateActiveCellData = (cellData) => {
+    const [row, col] = this.#activeCell
+    const { type } = this.#gameBoard[row][col]
+
+    if (type === 'pre-filled') return false
+    this.#recordHistory()
+
+    if (type === 'fill') {
+      this.#removeActiveCellMistakes()
     }
-    return this.UpdateNoteCell(cellData)
+
+    let success
+
+    if (this.#mode === 'fill') success = this.UpdateActiveCellFill(cellData)
+    else success = this.UpdateActiveNoteCell(cellData)
+
+    if (!success) this.#histories.pop()
+    return success
   }
 
-  UpdateCell = (newValue) => {
+  UpdateActiveCellFill = (newValue) => {
     const [row, col] = this.#activeCell
-    const prevValue = this.CurrentBoard[row][col]
+    const prevData = this.#gameBoard[row][col]
+    const { data: prevValue } = prevData
 
-    if (!this.#sudoku.CanUpdateCellValue(row, col)) return false
     if (prevValue === newValue) return false
 
-    this.#recordHistory(prevValue)
-
-    this.#cellData[row][col] = newValue
+    this.#gameBoard[row][col] = {
+      ...prevData,
+      data: newValue,
+      type: 'fill',
+    }
     this.#sudoku.UpdateCellValue(row, col, newValue)
+
+    this.#checkActiveCellMistakes(false)
     return true
   }
 
-  UpdateNoteCell = (noteValue) => {
+  UpdateActiveNoteCell = (noteValue) => {
     const [row, col] = this.#activeCell
-    let cellNote = this.#cellData[row][col]
+    const prevData = this.#gameBoard[row][col]
+    let { data: cellNote, type } = prevData
 
-    if (!this.#sudoku.CanUpdateCellValue(row, col)) return false
     if (noteValue < 0 || noteValue > 9) return false
     if (!noteValue && !cellNote) return false
-
-    const prevValue = cellNote instanceof Set ? new Set([...cellNote]) : cellNote
 
     if (!noteValue && cellNote) cellNote = null
     else {
@@ -140,9 +208,12 @@ class GameManager {
       else cellNote.add((noteValue))
     }
 
-    this.#recordHistory(prevValue)
-
-    this.#cellData[row][col] = cellNote
+    this.#gameBoard[row][col] = {
+      data: cellNote,
+      type: 'note',
+      correct: false,
+      duplicated: 0,
+    }
     this.#sudoku.UpdateCellValue(row, col, 0)
     return true
   }
@@ -153,40 +224,41 @@ class GameManager {
     const state = this.#histories.pop() // recover the latest state
     const { row, col, prev } = state
 
+    this.#removeActiveCellMistakes()
     this.SelectCell(row, col)
-    this.#cellData[row][col] = prev
+    this.#gameBoard[row][col] = prev
 
-    if (Number.isInteger(prev)) this.#sudoku.UpdateCellValue(row, col, prev)
+    if (prev.type === 'fill') this.#sudoku.UpdateCellValue(row, col, prev.data)
     else this.#sudoku.UpdateCellValue(row, col, 0)
 
+    this.#checkActiveCellMistakes(true)
     return true
   }
 
   PauseGame = () => {
-    this.#paused = true
+    this.#status = 'paused'
   }
 
   ResumeGame = () => {
-    this.#paused = false
+    this.#status = 'playing'
   }
 
   Hint = () => {
-    if (this.#hints === this.#allowedHints) return
+    if (this.#usedHints === this.#allowedHints) return
 
     const expectedBoard = this.#sudoku.ExpectedBoard
-    const currentBoard = this.#sudoku.CurrentBoard
     let x, y
 
     while (true) {
       x = randInt(0, 9)
       y = randInt(0, 9)
-      if (currentBoard[x][y]) continue
+      if (this.#gameBoard[x][y] === 'pre-fill') continue
       break
     }
 
-    this.#hints += 1
+    this.#usedHints += 1
     this.SelectCell(x, y)
-    this.UpdateCell(expectedBoard[x][y])
+    this.UpdateActiveCellFill(expectedBoard[x][y])
   }
 
   ToggleGameMode = () => {

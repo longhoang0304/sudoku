@@ -30,21 +30,7 @@ class Sudoku {
     return this.#difficulty
   }
 
-  CanUpdateCellValue = (row, col) => {
-    return !this.#initBoard[row][col]
-  }
-
-  UpdateCellValue = (row, col, cellValue) => {
-    this.#activeBoard[row][col] = cellValue
-  }
-
-  LoadBoards(activeBoard, initBoard, expectedBoard) {
-    this.#activeBoard = activeBoard
-    this.#initBoard = initBoard
-    this.#expectedBoard = expectedBoard
-  }
-
-  genCompleteBoard() {
+  #genCompleteBoard() {
     this.#expectedBoard = []
 
     for (let i = 0; i < 9; i++) {
@@ -56,7 +42,7 @@ class Sudoku {
     }
   }
 
-  removeCells(noCells) {
+  #removeCells(noCells) {
     const removedCells = new Set()
     const board = []
     for (let i = 0; i < 9; i++) {
@@ -76,12 +62,46 @@ class Sudoku {
     return board
   }
 
+  SearchDuplicatedCells = (row, col) => {
+    const blockRow = Math.floor(row / 3) * 3
+    const blockCol = Math.floor(col / 3) * 3
+    const errors = []
+    const value = this.#activeBoard[row][col]
+
+    if (!value) return errors
+
+    for (let i = 0; i < 9; i++) {
+      // check row
+      if (i !== row && value === this.#activeBoard[i][col]) errors.push([i, col])
+
+      // check col
+      if (i !== col && value === this.#activeBoard[row][i]) errors.push([row, i])
+
+      // check square
+      let x = blockRow + Math.floor(i / 3)
+      let y = blockCol + (i % 3)
+      if (x !== row && y !== col && value === this.#activeBoard[x][y]) errors.push([x, y])
+    }
+
+    return errors
+  }
+
+  UpdateCellValue = (row, col, cellValue) => {
+    this.#activeBoard[row][col] = cellValue
+  }
+
+  LoadBoards(activeBoard, initBoard, expectedBoard) {
+    this.#activeBoard = activeBoard
+    this.#initBoard = initBoard
+    this.#expectedBoard = expectedBoard
+  }
+
   InitBoards() {
     const [min, max] = Sudoku.#DIFFICULTY_MAP[this.#difficulty]
     const noCells = randInt(min, max + 1)
     
-    this.genCompleteBoard()
-    this.#initBoard = this.removeCells(noCells)
+    this.#genCompleteBoard()
+    this.#initBoard = this.#removeCells(noCells)
     this.#activeBoard = []
 
     for (let i = 0; i < 9; i++) {

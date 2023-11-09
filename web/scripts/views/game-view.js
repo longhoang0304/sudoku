@@ -30,8 +30,8 @@ class GameView {
 
   renderUI() {
     this.renderStatus()
-    this.renderActiveCell(null)
     this.renderActions()
+    this.renderBoard()
 
     if (this.#gamevm.Paused) this.renderPausedGame()
     else this.renderResumedGame()
@@ -103,8 +103,8 @@ class GameView {
     this.renderTime([23, 10, 58])
   }
 
-  renderCell = () => {
-    const { row, col, data } = this.#gamevm.CellData
+  renderActiveCellData = () => {
+    const { row, col, data, type } = this.#gamevm.ActiveCellData
     const cell = this.#uiBoard[row][col]
 
     if (!data) {
@@ -114,31 +114,21 @@ class GameView {
 
     let cellDataElement
 
-    if (Number.isInteger(data)) cellDataElement = this.createCellDataElement(data)
+    if (type === 'fill') cellDataElement = this.createCellDataElement(data)
     else cellDataElement = this.createCellNoteElement(data)
 
     cell.replaceChildren(cellDataElement)
   }
 
-  renderBoard = (sudokuBoard) => {
+  renderBoard = () => {
+    const sudokuBoard = this.#gamevm.GameBoard
+
     for (let i = 0; i < 9; i++) {
       for (let j = 0; j < 9; j++) {
         this.renderCellData(i, j, sudokuBoard[i][j])
       }
     }
-  }
-
-  renderActiveCell = (prevValue) => {
-    const { row, col } = this.#gamevm.ActiveCell
-    if (!prevValue) {
-      this.activeSelectedCell({row, col})
-      return
-    }
-    const { row: prevRow = 0, col: prevCol = 0 } = prevValue ?? {}
-    if (row === prevRow && col === prevCol) return
-
-    this.removeSelectedCell(prevValue)
-    this.activeSelectedCell(this.#gamevm.ActiveCell)
+    this.activeSelectedCell(this.#gamevm.ActiveCellData)
   }
 
   renderPausedGame = () => {
@@ -149,9 +139,8 @@ class GameView {
     const gamePauseScreen = document.getElementById('game-paused')
     gamePauseScreen.classList.remove('hide')
 
-    const board = [...new Array(9)].map(_ => new Array(9))
     this.removeSelectedCell(this.#gamevm.ActiveCell)
-    this.renderBoard(board)
+    this.renderBoard()
   }
 
   renderResumedGame = () => {
@@ -162,9 +151,8 @@ class GameView {
     const gamePauseScreen = document.getElementById('game-paused')
     gamePauseScreen.classList.add('hide')
 
-    const board = this.#gamevm.ActiveSudokuBoard
     this.activeSelectedCell(this.#gamevm.ActiveCell)
-    this.renderBoard(board)
+    this.renderBoard()
   }
 
   // ===================================
@@ -198,7 +186,7 @@ class GameView {
   }
 
   erasePressed = () => {
-    this.#gamevm.HandleCellData(0)
+    this.#gamevm.UpdateActiveCellData(0)
   }
 
   undoPressed = () => {
@@ -232,7 +220,7 @@ class GameView {
 
   numpadPressed = (evt) => {
     const { currentTarget } = evt;
-    this.#gamevm.HandleCellData(parseInt(currentTarget.dataset.value))
+    this.#gamevm.UpdateActiveCellData(parseInt(currentTarget.dataset.value))
   }
 
   registerNumpadPressedHandler = () => {
@@ -250,7 +238,7 @@ class GameView {
   }
 
   handleHintKeyboardInput = (evt) => {
-    const {keyCode} = evt;
+    const { keyCode } = evt;
 
     if (keyCode !== 0) {
       return
@@ -286,11 +274,11 @@ class GameView {
     const { keyCode } = evt;
 
     if (keyCode === 8 || keyCode === 46) { // backspace and delete
-      this.#gamevm.HandleCellData(0)
+      this.#gamevm.UpdateActiveCellData(0)
     }
 
     if (keyCode < 49 || keyCode > 57) return
-    this.#gamevm.HandleCellData(keyCode - 48)
+    this.#gamevm.UpdateActiveCellData(keyCode - 48)
   }
 
   registerCellPressedHandler = () => {
@@ -357,8 +345,9 @@ class GameView {
   // bind view model to view -> update on vm will reflect on view
 
   bindViewModel = () => {
-    this.#gamevm.AddPropertyChangedListener('ActiveCell', this.renderActiveCell)
-    this.#gamevm.AddPropertyChangedListener('CellData', this.renderCell)
+    this.#gamevm.AddPropertyChangedListener('ActiveCell', this.renderBoard)
+    this.#gamevm.AddPropertyChangedListener('ActiveCellData', this.renderActiveCellData)
+    this.#gamevm.AddPropertyChangedListener('ActiveCellData', this.renderBoard)
     this.#gamevm.AddPropertyChangedListener('Duration', this.renderTime)
     this.#gamevm.AddPropertyChangedListener('Mistakes', this.renderMistakeStatus)
     this.#gamevm.AddPropertyChangedListener('Paused', this.renderPausedGame)
@@ -372,42 +361,28 @@ class GameView {
   // helpers
   removeSelectedCell = ({ row, col }) => {
     this.#uiBoard[row][col].classList.remove('selected')
-    for (const ele of this.#uiBoard[row]) {
-      ele.classList.remove('activated')
-    }
-    for (let i = 0; i < 9; i++) {
-      const ele = this.#uiBoard[i][col]
-      ele.classList.remove('activated')
-    }
-  
     const baseRow = Math.floor(row / 3) * 3
     const baseCol = Math.floor(col / 3) * 3
-    for (let i = 0; i < 3; i++) {
-        for (let j = 0; j < 3; j++) {
-        const ele = this.#uiBoard[baseRow + i][baseCol + j]
-        ele.classList.remove('activated')
-      }
+    const board = this.#gamevm.CurrentBoard
+
+    for (let i = 0; i < 9; i++) {
+      this.#uiBoard[i][col].classList.remove('activated')
+      this.#uiBoard[row][i].classList.remove('activated')
+      this.#uiBoard[baseRow + Math.floor(i / 3)][baseCol + i % 3].classList.remove('activated')
     }
   }
 
   activeSelectedCell = ({ row, col }) => {
-    this.#uiBoard[row][col].classList.add('selected')
-    for (const ele of this.#uiBoard[row]) {
-      ele.classList.add('activated')
-    }
-  
-    for (let i = 0; i < 9; i++) {
-      const ele = this.#uiBoard[i][col]
-      ele.classList.add('activated')
-    }
-  
     const baseRow = Math.floor(row / 3) * 3
     const baseCol = Math.floor(col / 3) * 3
-    for (let i = 0; i < 3; i++) {
-      for (let j = 0; j < 3; j++) {
-        const ele = this.#uiBoard[baseRow + i][baseCol + j]
-        ele.classList.add('activated')
-      }
+
+    this.#uiBoard[row][col].classList.add('selected')
+    for (let i = 0; i < 9; i++) {
+      const x = baseRow + Math.floor(i / 3)
+      const y = baseCol + i % 3
+      this.#uiBoard[i][col].classList.add('activated')
+      this.#uiBoard[row][i].classList.add('activated')
+      this.#uiBoard[x][y].classList.add('activated')
     }
   }
 
@@ -435,15 +410,25 @@ class GameView {
     return div
   }
 
-  renderCellData = (row, col, data) => {
+  renderCellData = (row, col, { data, duplicated, type, correct }) => {
     const cell = this.#uiBoard[row][col]
+    const { data: currentValue } = this.#gamevm.ActiveCellData
+    cell.className = 'game-board__col'
 
     if (!data) {
       cell.replaceChildren()
       return
     }
 
-    const cellDataElement = this.createCellDataElement(data)
+    const isFill = type === 'fill' || type === 'pre-filled'
+    const isEditableFill = type === 'fill'
+
+    if (isEditableFill && !correct) cell.classList.add('input-incorrect')
+    if (isEditableFill && correct) cell.classList.add('input-correct')
+    if (isFill && duplicated) cell.classList.add('duplicated')
+    if (currentValue && currentValue === data) cell.classList.add('doppelganger')
+
+    const cellDataElement = isFill ? this.createCellDataElement(data) : this.createCellNoteElement(data)
     cell.replaceChildren(cellDataElement)
   }
 }

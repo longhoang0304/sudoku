@@ -9,7 +9,7 @@ class GameViewModel extends Observable {
   }
 
   get ActiveSudokuBoard() {
-    return this.#gameManager.CurrentBoard
+    return this.#gameManager.ActiveSudokuBoard
   }
 
   get ActiveCell() {
@@ -20,14 +20,14 @@ class GameViewModel extends Observable {
     }
   }
 
-  get CellData() {
+  get ActiveCellData() {
     const { row, col } = this.ActiveCell
-    const data = this.#gameManager.CellData[row][col]
+    const data = this.#gameManager.GameBoard[row][col]
 
     return {
       row,
       col,
-      data,
+      ...data,
     }
   }
 
@@ -48,7 +48,7 @@ class GameViewModel extends Observable {
   }
 
   get Paused() {
-    return this.#gameManager.Paused
+    return this.#gameManager.Status === 'paused'
   }
 
   get AvailableHints() {
@@ -72,6 +72,10 @@ class GameViewModel extends Observable {
     return [hour, minute, second]
   }
 
+  get GameBoard() {
+    return this.#gameManager.GameBoard
+  }
+
   get Mode() {
     return this.#gameManager.Mode
   }
@@ -82,7 +86,7 @@ class GameViewModel extends Observable {
   }
 
   SelectCell = (row, col) => {
-    this.Paused && this.ResumeGame()
+    this.Status && this.ResumeGame()
     const prevValue = this.ActiveCell
     this.#gameManager.SelectCell(row, col)
     this.PropertyChanged('ActiveCell', prevValue)
@@ -93,12 +97,13 @@ class GameViewModel extends Observable {
     this.PropertyChanged('Duration')
   }
 
-  HandleCellData = (cellData) => {
+  UpdateActiveCellData = (cellData) => {
     this.Paused && this.ResumeGame()
     const prevValue = this.ActiveCell
-    if (!this.#gameManager.HandleCellData(cellData)) return
+    if (!this.#gameManager.UpdateActiveCellData(cellData)) return
+    this.PropertyChanged('Mistakes')
     this.PropertyChanged('AvailableUndo')
-    this.PropertyChanged('CellData')
+    this.PropertyChanged('ActiveCellData')
     this.PropertyChanged('ActiveCell', prevValue)
   }
 
@@ -106,8 +111,9 @@ class GameViewModel extends Observable {
     this.Paused && this.ResumeGame()
     const prevValue = this.ActiveCell
     if(!this.#gameManager.Undo()) return
+    this.PropertyChanged('Mistakes')
     this.PropertyChanged('AvailableUndo')
-    this.PropertyChanged('CellData')
+    this.PropertyChanged('ActiveCellData')
     this.PropertyChanged('ActiveCell', prevValue)
   }
 
@@ -127,7 +133,7 @@ class GameViewModel extends Observable {
     const prevValue = this.ActiveCell
     this.#gameManager.Hint()
     this.PropertyChanged('ActiveCell', prevValue)
-    this.PropertyChanged('CellData')
+    this.PropertyChanged('ActiveCellData')
     this.PropertyChanged('AvailableHints')
     this.PropertyChanged('AvailableUndo')
   }

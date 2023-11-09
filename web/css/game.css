@@ -12,7 +12,7 @@
 #game {
   width: 100%;
   aspect-ratio: 1/1;
-  border: 3px solid var(--black);
+  border: 2px solid var(--black);
   color: var(--black);
   box-sizing: border-box;
   user-select: none;
@@ -33,16 +33,16 @@
 .game-board__row {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
-  border-bottom: 2px solid var(--grey);
+  border-bottom: 1px solid var(--grey);
 }
 
 .game-board__row:nth-child(3n):not(:last-child) {
-  border-bottom: 3px solid var(--black);;
+  border-bottom: 2px solid var(--black);;
 }
 
 .game-board__col {
   cursor: pointer;
-  border-right: 2px solid var(--grey);
+  border-right: 1px solid var(--grey);
   position: relative;
 }
 
@@ -51,31 +51,31 @@
 }
 
 .game-board__col:nth-child(3n):not(:last-child) {
-  border-right: 3px solid var(--black);
+  border-right: 2px solid var(--black);
 }
 
 .game-board__col.activated {
   background: #e2ebf3;
 }
 
-.game-board__col.same-value {
+.game-board__col.doppelganger {
   background: #c3d7ea;
-}
-
-.game-board__col.selected {
-  background: #bbdefb;
 }
 
 .game-board__col.duplicated {
   background: #f7cfd6;
 }
 
-.game-board__col.input-correct {
-  color: #325aaf;
+.game-board__col.selected {
+  background: #bbdefb;
 }
 
-.game-board__col.input-wrong {
+.game-board__col.input-incorrect {
   color: #e45f6f;
+}
+
+.game-board__col.input-correct {
+  color: #325aaf;
 }
 
 #game-paused.hide {
