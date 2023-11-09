@@ -14,10 +14,10 @@ class GameView {
   kickStartInitProcess = () => {
     this.difficulty = localStorage.getItem('difficulty')?.toLocaleLowerCase()
     this.collectBoard()
-    this.renderUI()
-
     this.registerEventHandler()
     this.bindViewModel()
+
+    this.#gamevm.InitGame()
   }
 
   collectBoard() {
@@ -28,7 +28,7 @@ class GameView {
     }
   }
 
-  renderUI() {
+  renderUI = () => {
     this.renderStatus()
     this.renderActions()
     this.renderBoard()
@@ -60,6 +60,7 @@ class GameView {
   renderActions = () => {
     this.renderAvailableUndo()
     this.renderAvailableHints()
+    this.renderGameMode()
   }
 
   renderTime = () => {
@@ -78,12 +79,12 @@ class GameView {
     timeEle.children[1].innerText = time
   }
 
-  renderDifficulty() {
+  renderDifficulty = () => {
     const diffEle = document.getElementById('status-difficulty')
     diffEle.children[1].innerText = this.#gamevm.Difficulty
   }
 
-  renderScore() {
+  renderScore = () => {
     const scoreEle = document.getElementById('status-score')
     scoreEle.children[1].innerText = this.#gamevm.Score
   }
@@ -97,7 +98,7 @@ class GameView {
   }
 
   renderStatus = () => {
-    this.renderDifficulty(this.difficulty)
+    this.renderDifficulty(this.#gamevm.Difficulty)
     this.renderScore(1000)
     this.renderMistakeStatus()
     this.renderTime([23, 10, 58])
@@ -113,8 +114,9 @@ class GameView {
     }
 
     let cellDataElement
+    const isFill = type === 'fill' || type === 'pre-filled'
 
-    if (type === 'fill') cellDataElement = this.createCellDataElement(data)
+    if (isFill) cellDataElement = this.createCellDataElement(data)
     else cellDataElement = this.createCellNoteElement(data)
 
     cell.replaceChildren(cellDataElement)
@@ -139,7 +141,7 @@ class GameView {
     const gamePauseScreen = document.getElementById('game-paused')
     gamePauseScreen.classList.remove('hide')
 
-    this.removeSelectedCell(this.#gamevm.ActiveCell)
+    this.removeSelectedCell(this.#gamevm.ActiveCellData)
     this.renderBoard()
   }
 
@@ -151,7 +153,7 @@ class GameView {
     const gamePauseScreen = document.getElementById('game-paused')
     gamePauseScreen.classList.add('hide')
 
-    this.activeSelectedCell(this.#gamevm.ActiveCell)
+    this.activeSelectedCell(this.#gamevm.ActiveCellData)
     this.renderBoard()
   }
 
@@ -163,6 +165,7 @@ class GameView {
     this.registerCellPressedHandler()
     this.registerNewGameHandler()
     this.registerBackBtnPressedHandler()
+    this.registerRestartBtnPressedHandler()
     this.registerBackToHomeBtnPressedHandler()
     this.registerNumpadPressedHandler()
     this.registerActionPressedHandler()
@@ -262,7 +265,7 @@ class GameView {
       return
     }
 
-    let { row, col } = this.#gamevm.ActiveCell
+    let { row, col } = this.#gamevm.ActiveCellData
     if (keyCode === 38) row = Math.max(0, row - 1)
     if (keyCode === 40) row = Math.min(8, row + 1)
     if (keyCode === 37) col = Math.max(0, col - 1)
@@ -305,6 +308,13 @@ class GameView {
     newGameEle.onclick = this.#difficultyPopup.toggleDifficultyMenu
   }
 
+  registerRestartBtnPressedHandler = () => {
+    const diffiPopup = document.getElementById('difficulty-popup')
+    const restartBtn = diffiPopup.children.item(diffiPopup.children.length - 2)
+    restartBtn.addEventListener('click', this.restartGame)
+    restartBtn.addEventListener('click', this.#difficultyPopup.toggleDifficultyMenu)
+  }
+
   registerBackBtnPressedHandler = () => {
     const diffiPopup = document.getElementById('difficulty-popup')
     const backBtn = diffiPopup.children.item(diffiPopup.children.length - 1)
@@ -321,23 +331,22 @@ class GameView {
     header.children[0].onclick = this.backToHome
   }
 
+  restartGame = () => {
+    this.#gamevm.RestartGame()
+  }
+
   createNewGame = (evt) => {
     const ele = evt.currentTarget
     const difficulty = ele.dataset.difficulty
-    if (difficulty === 'restart') {
-      // push restart game command
-    } else {
-      localStorage.setItem('difficulty', difficulty)
-      // push new game command
-    }
+    this.#gamevm.DifficultySelected(difficulty)
   }
 
   handleModelStateUpdated = (modalStatus) => {
     if (modalStatus === 'on') {
-      // push pause game command
-    }
-    else {
-      // push resume game command
+      this.#gamevm.PauseGame()
+    } else {
+      this.#gamevm.ResumeGame()
+
     }
   }
 
@@ -355,6 +364,7 @@ class GameView {
     this.#gamevm.AddPropertyChangedListener('AvailableHints', this.renderAvailableHints)
     this.#gamevm.AddPropertyChangedListener('AvailableUndo', this.renderAvailableUndo)
     this.#gamevm.AddPropertyChangedListener('GameMode', this.renderGameMode)
+    this.#gamevm.AddPropertyChangedListener('Game', this.renderUI)
   }
 
   // ===================================
@@ -363,7 +373,6 @@ class GameView {
     this.#uiBoard[row][col].classList.remove('selected')
     const baseRow = Math.floor(row / 3) * 3
     const baseCol = Math.floor(col / 3) * 3
-    const board = this.#gamevm.CurrentBoard
 
     for (let i = 0; i < 9; i++) {
       this.#uiBoard[i][col].classList.remove('activated')

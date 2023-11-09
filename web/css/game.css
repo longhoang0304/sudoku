@@ -182,7 +182,7 @@
 }
 
 #status-time > div:first-child > div:last-child {
-  color: black;
+  color: var(--black);
   font-weight: normal;
   font-size: 1.25rem;
 }

@@ -5,7 +5,7 @@ class DifficultyPopupView {
     document.addEventListener('DOMContentLoaded', this.kickStartInitProcess.bind(this));
   }
 
-  toggleDifficultyMenu() {
+  toggleDifficultyMenu = () => {
     const diffPopup = document.getElementById('difficulty-popup')
     if (!diffPopup) {
       const err = 'Missing difficult popup!'
@@ -18,7 +18,7 @@ class DifficultyPopupView {
     if (this.difficultyMenuCb instanceof Function) this.difficultyMenuCb(diffPopup.className)
   }
 
-  registerDifficultyHandler() {
+  registerDifficultyHandler = () => {
     if (!this.difficultyHandler) return
 
     const difficulties = document.getElementsByClassName('difficulty-popup__item')

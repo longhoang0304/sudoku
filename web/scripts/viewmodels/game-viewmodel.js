@@ -1,27 +1,15 @@
 class GameViewModel extends Observable {
   #gameManager
   #durationTracker
+  static #ALLOWED_DIFFICULTY = new Set(["easy", "medium", "hard", "expert", "master", "legendary"])
 
   constructor(gameManager) {
     super()
     this.#gameManager = gameManager
-    this.NewGame()
-  }
-
-  get ActiveSudokuBoard() {
-    return this.#gameManager.ActiveSudokuBoard
-  }
-
-  get ActiveCell() {
-    const [row, col] = this.#gameManager.ActiveCell
-    return {
-      row,
-      col,
-    }
   }
 
   get ActiveCellData() {
-    const { row, col } = this.ActiveCell
+    const [ row, col ] = this.#gameManager.ActiveCell
     const data = this.#gameManager.GameBoard[row][col]
 
     return {
@@ -80,14 +68,23 @@ class GameViewModel extends Observable {
     return this.#gameManager.Mode
   }
 
-  NewGame() {
-    this.#gameManager.NewGame()
+  #checkDifficulty(difficulty) {
+    if (GameViewModel.#ALLOWED_DIFFICULTY.has(difficulty)) return
+    console.error(`${difficulty} is not supported`)
+    window.location = 'index.html'
+  }
+
+  NewGame(difficulty) {
+    clearInterval(this.#durationTracker)
+    this.#checkDifficulty(difficulty)
+    this.#gameManager.NewGame(difficulty)
     this.#durationTracker = setInterval(this.TrackDuration, 1000)
+    this.PropertyChanged('Game')
   }
 
   SelectCell = (row, col) => {
     this.Status && this.ResumeGame()
-    const prevValue = this.ActiveCell
+    const prevValue = this.ActiveCellData
     this.#gameManager.SelectCell(row, col)
     this.PropertyChanged('ActiveCell', prevValue)
   }
@@ -99,7 +96,7 @@ class GameViewModel extends Observable {
 
   UpdateActiveCellData = (cellData) => {
     this.Paused && this.ResumeGame()
-    const prevValue = this.ActiveCell
+    const prevValue = this.ActiveCellData
     if (!this.#gameManager.UpdateActiveCellData(cellData)) return
     this.PropertyChanged('Mistakes')
     this.PropertyChanged('AvailableUndo')
@@ -109,8 +106,10 @@ class GameViewModel extends Observable {
 
   Undo = () => {
     this.Paused && this.ResumeGame()
-    const prevValue = this.ActiveCell
+    const prevValue = this.ActiveCellData
+
     if(!this.#gameManager.Undo()) return
+
     this.PropertyChanged('Mistakes')
     this.PropertyChanged('AvailableUndo')
     this.PropertyChanged('ActiveCellData')
@@ -118,20 +117,26 @@ class GameViewModel extends Observable {
   }
 
   PauseGame = () => {
+    if (this.#gameManager.Status !== 'started') return
+
     this.#gameManager.PauseGame()
     clearInterval(this.#durationTracker)
     this.PropertyChanged('Paused')
   }
 
   ResumeGame = () => {
+    if (this.#gameManager.Status !== 'paused') return
+
     this.#gameManager.ResumeGame()
     this.#durationTracker = setInterval(this.TrackDuration, 1000)
     this.PropertyChanged('Resumed')
   }
 
   Hint = () => {
-    const prevValue = this.ActiveCell
-    this.#gameManager.Hint()
+    const prevValue = this.ActiveCellData
+
+    if(!this.#gameManager.Hint()) return
+
     this.PropertyChanged('ActiveCell', prevValue)
     this.PropertyChanged('ActiveCellData')
     this.PropertyChanged('AvailableHints')
@@ -141,5 +146,22 @@ class GameViewModel extends Observable {
   ToggleGameMode = () => {
     this.#gameManager.ToggleGameMode()
     this.PropertyChanged('GameMode')
+  }
+
+  RestartGame = () => {
+    clearInterval(this.#durationTracker)
+    this.#gameManager.RestartGame()
+    this.#durationTracker = setInterval(this.TrackDuration, 1000)
+    this.PropertyChanged('Game')
+  }
+
+  DifficultySelected = (difficulty) => {
+    localStorage.setItem('difficulty', difficulty)
+    this.NewGame(difficulty)
+  }
+
+  InitGame = () => {
+    const difficulty = localStorage.getItem('difficulty')
+    this.NewGame(difficulty)
   }
 }
