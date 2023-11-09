@@ -243,7 +243,7 @@ class GameView {
   handleHintKeyboardInput = (evt) => {
     const { keyCode } = evt;
 
-    if (keyCode !== 0) {
+    if (keyCode !== 191) {
       return
     }
     this.hintPressed()
@@ -424,7 +424,7 @@ class GameView {
     const { data: currentValue } = this.#gamevm.ActiveCellData
     cell.className = 'game-board__col'
 
-    if (!data) {
+    if (!data || this.#gamevm.Paused) {
       cell.replaceChildren()
       return
     }

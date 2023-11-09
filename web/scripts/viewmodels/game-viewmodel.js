@@ -133,6 +133,7 @@ class GameViewModel extends Observable {
   }
 
   Hint = () => {
+    this.Paused && this.ResumeGame()
     const prevValue = this.ActiveCellData
 
     if(!this.#gameManager.Hint()) return
