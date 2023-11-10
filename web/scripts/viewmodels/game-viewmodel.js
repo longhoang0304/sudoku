@@ -64,6 +64,18 @@ class GameViewModel extends Observable {
     return this.#gameManager.GameBoard
   }
 
+  get GameOver() {
+    return this.Lose || this.Won
+  }
+
+  get Lose() {
+    return this.#gameManager.Status === 'lose'
+  }
+
+  get Won() {
+    return this.#gameManager.Status === 'won'
+  }
+
   get Mode() {
     return this.#gameManager.Mode
   }
@@ -82,34 +94,46 @@ class GameViewModel extends Observable {
     this.PropertyChanged('Game')
   }
 
-  SelectCell = (row, col) => {
-    this.Status && this.ResumeGame()
-    const prevValue = this.ActiveCellData
-    this.#gameManager.SelectCell(row, col)
-    this.PropertyChanged('ActiveCell', prevValue)
-  }
-
   TrackDuration = () => {
     this.#gameManager.Duration += 1
     this.PropertyChanged('Duration')
   }
 
+  SelectCell = (row, col) => {
+    if (this.GameOver) return
+    this.Status && this.ResumeGame()
+
+    const prevValue = this.ActiveCellData
+    this.#gameManager.SelectCell(row, col)
+    this.PropertyChanged('ActiveCell', prevValue)
+  }
+
   UpdateActiveCellData = (cellData) => {
+    if (this.GameOver) return
     this.Paused && this.ResumeGame()
+
     const prevValue = this.ActiveCellData
     if (!this.#gameManager.UpdateActiveCellData(cellData)) return
     this.PropertyChanged('Mistakes')
     this.PropertyChanged('AvailableUndo')
     this.PropertyChanged('ActiveCellData')
     this.PropertyChanged('ActiveCell', prevValue)
+
+    this.CheckGameGameStatus()
+  }
+
+  CheckGameGameStatus = () => {
+    if (!this.GameOver) return
+    clearInterval(this.#durationTracker)
+    this.PropertyChanged('GameOver')
   }
 
   Undo = () => {
+    if (this.GameOver) return
     this.Paused && this.ResumeGame()
+
     const prevValue = this.ActiveCellData
-
     if(!this.#gameManager.Undo()) return
-
     this.PropertyChanged('Mistakes')
     this.PropertyChanged('AvailableUndo')
     this.PropertyChanged('ActiveCellData')
@@ -117,6 +141,7 @@ class GameViewModel extends Observable {
   }
 
   PauseGame = () => {
+    if (this.GameOver) return
     if (this.#gameManager.Status !== 'started') return
 
     this.#gameManager.PauseGame()
@@ -125,6 +150,7 @@ class GameViewModel extends Observable {
   }
 
   ResumeGame = () => {
+    if (this.GameOver) return
     if (this.#gameManager.Status !== 'paused') return
 
     this.#gameManager.ResumeGame()
@@ -133,11 +159,11 @@ class GameViewModel extends Observable {
   }
 
   Hint = () => {
+    if (this.GameOver) return
     this.Paused && this.ResumeGame()
+
     const prevValue = this.ActiveCellData
-
     if(!this.#gameManager.Hint()) return
-
     this.PropertyChanged('ActiveCell', prevValue)
     this.PropertyChanged('ActiveCellData')
     this.PropertyChanged('AvailableHints')
@@ -145,6 +171,8 @@ class GameViewModel extends Observable {
   }
 
   ToggleGameMode = () => {
+    if (this.GameOver) return
+
     this.#gameManager.ToggleGameMode()
     this.PropertyChanged('GameMode')
   }

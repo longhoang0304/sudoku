@@ -192,6 +192,9 @@ class GameManager {
     this.#sudoku.UpdateCellValue(row, col, newValue)
 
     this.#checkActiveCellMistakes(false)
+    if (this.#mistakes > this.#allowedMistakes) {
+      this.#status = 'lose'
+    }
     return true
   }
 

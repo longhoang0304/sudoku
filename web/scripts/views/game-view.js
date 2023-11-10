@@ -35,6 +35,9 @@ class GameView {
 
     if (this.#gamevm.Paused) this.renderPausedGame()
     else this.renderResumedGame()
+
+    const gameOverPanel = document.getElementById('game-over')
+    if(!gameOverPanel.classList.contains('hide')) gameOverPanel.classList.add('hide')
   }
 
   renderAvailableUndo = () => {
@@ -64,19 +67,8 @@ class GameView {
   }
 
   renderTime = () => {
-    const [hour, minute, second] = this.#gamevm.Duration
     const timeEle = document.getElementById('status-time').children[0]
-    let time = ""
-
-    if (hour) {
-      time = String(hour).padStart(2, '0')
-      time += ":"
-    }
-    time += String(minute).padStart(2, '0')
-    time += ":"
-    time = time + String(second).padStart(2, '0')
-
-    timeEle.children[1].innerText = time
+    timeEle.children[1].innerText = this.parseTime(...this.#gamevm.Duration)
   }
 
   renderDifficulty = () => {
@@ -130,6 +122,7 @@ class GameView {
         this.renderCellData(i, j, sudokuBoard[i][j])
       }
     }
+    if (this.#gamevm.GameOver) return
     this.activeSelectedCell(this.#gamevm.ActiveCellData)
   }
 
@@ -155,6 +148,20 @@ class GameView {
 
     this.activeSelectedCell(this.#gamevm.ActiveCellData)
     this.renderBoard()
+  }
+
+  renderGameOver = () => {
+    const gameOverPanel = document.getElementById('game-over')
+    gameOverPanel.classList.remove('hide')
+
+    const gameOverText = document.getElementById('game-over__text')
+    gameOverText.innerText = this.#gamevm.Lose ? 'Game Over' : 'You Won'
+
+    const gameOverDuration = document.getElementById('game-over__time')
+    gameOverDuration.children[1].innerText = this.parseTime(...this.#gamevm.Duration)
+
+    const gameOverScore = document.getElementById('game-over__score')
+    gameOverScore.children[1].innerText = this.#gamevm.Score
   }
 
   // ===================================
@@ -365,6 +372,8 @@ class GameView {
     this.#gamevm.AddPropertyChangedListener('AvailableUndo', this.renderAvailableUndo)
     this.#gamevm.AddPropertyChangedListener('GameMode', this.renderGameMode)
     this.#gamevm.AddPropertyChangedListener('Game', this.renderUI)
+    this.#gamevm.AddPropertyChangedListener('GameOver', this.renderGameOver)
+    this.#gamevm.AddPropertyChangedListener('GameOver', this.renderBoard)
   }
 
   // ===================================
@@ -419,12 +428,26 @@ class GameView {
     return div
   }
 
+  parseTime = (hour, minute, second) => {
+    let time = ""
+
+    if (hour) {
+      time = String(hour).padStart(2, '0')
+      time += ":"
+    }
+    time += String(minute).padStart(2, '0')
+    time += ":"
+    time = time + String(second).padStart(2, '0')
+
+    return time
+  }
+
   renderCellData = (row, col, { data, duplicated, type, correct }) => {
     const cell = this.#uiBoard[row][col]
     const { data: currentValue } = this.#gamevm.ActiveCellData
     cell.className = 'game-board__col'
 
-    if (!data || this.#gamevm.Paused) {
+    if (!data || this.#gamevm.Paused || this.#gamevm.GameOver) {
       cell.replaceChildren()
       return
     }
