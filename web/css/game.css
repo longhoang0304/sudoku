@@ -139,6 +139,10 @@
   font-weight: bold;
 }
 
+.game-over__stats span:first-child {
+  color: rgb(148, 163, 183);
+}
+
 .game-over__button {
   margin-top: .67rem;
 }

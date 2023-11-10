@@ -366,6 +366,7 @@ class GameView {
     this.#gamevm.AddPropertyChangedListener('ActiveCellData', this.renderBoard)
     this.#gamevm.AddPropertyChangedListener('Duration', this.renderTime)
     this.#gamevm.AddPropertyChangedListener('Mistakes', this.renderMistakeStatus)
+    this.#gamevm.AddPropertyChangedListener('Score', this.renderScore)
     this.#gamevm.AddPropertyChangedListener('Paused', this.renderPausedGame)
     this.#gamevm.AddPropertyChangedListener('Resumed', this.renderResumedGame)
     this.#gamevm.AddPropertyChangedListener('AvailableHints', this.renderAvailableHints)

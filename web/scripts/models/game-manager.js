@@ -13,15 +13,21 @@ class GameManager {
   #allowedMistakes = 5
   #allowedHints = 5
   #maxScore = 0
-  #scoreDeduction = 10
+  #thinkingStart = null
+  #scoreDeduction = 5
   #thinkingInterval = 5
+  #scoredCells = null
+  static #MAX_SCORE_MAP = {
+    'easy': 25,
+    'medium': 50,
+    'hard': 75,
+    'expert': 100,
+    'master': 125,
+    'legendary': 150
+  }
 
   // ============
   // == GETTER ==
-  get ActiveSudokuBoard() {
-    return this.#sudoku.CurrentBoard
-  }
-
   get ActiveCell() {
     return this.#activeCell
   }
@@ -84,7 +90,9 @@ class GameManager {
     this.#score = 0
     this.#status = 'started'
     this.#mode = 'fill'
-    this.#maxScore = 50 // easy = 55, medium = 105, hard = 155, ...
+    this.#scoredCells = new Set()
+    this.#thinkingStart = new Date()
+    this.#maxScore = GameManager.#MAX_SCORE_MAP[this.#sudoku.Difficulty]
     this.#gameBoard = [...new Array(9)].map(() => [...new Array(9)])
     for (let i = 0; i < 9; i++) {
       for (let j = 0; j < 9; j++) {
@@ -97,6 +105,21 @@ class GameManager {
         }
       }
     }
+  }
+
+  #rewardScore = () => {
+    const [row, col] = this.#activeCell
+    const cellData = this.#gameBoard[row][col]
+    const cellKey = row * 9 + col
+
+    if (this.#scoredCells.has(cellKey)) return
+
+    const thinkingTimeGap = Math.floor((new Date() - this.#thinkingStart) / (this.#thinkingInterval * 1000))
+    const score = Math.max(this.#scoreDeduction, this.#maxScore - thinkingTimeGap * this.#scoreDeduction)
+
+    if (cellData.correct) this.#score += score
+    this.#thinkingStart = new Date()
+    this.#scoredCells.add(cellKey)
   }
 
   #checkActiveCellMistakes = (isUndo = false) => {
@@ -192,6 +215,8 @@ class GameManager {
     this.#sudoku.UpdateCellValue(row, col, newValue)
 
     this.#checkActiveCellMistakes(false)
+    this.#rewardScore()
+
     if (this.#mistakes > this.#allowedMistakes) {
       this.#status = 'lose'
     }

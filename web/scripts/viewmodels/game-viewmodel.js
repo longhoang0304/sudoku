@@ -114,6 +114,7 @@ class GameViewModel extends Observable {
 
     const prevValue = this.ActiveCellData
     if (!this.#gameManager.UpdateActiveCellData(cellData)) return
+    this.PropertyChanged('Score')
     this.PropertyChanged('Mistakes')
     this.PropertyChanged('AvailableUndo')
     this.PropertyChanged('ActiveCellData')
@@ -168,6 +169,7 @@ class GameViewModel extends Observable {
     this.PropertyChanged('ActiveCellData')
     this.PropertyChanged('AvailableHints')
     this.PropertyChanged('AvailableUndo')
+    this.PropertyChanged('Score')
   }
 
   ToggleGameMode = () => {
