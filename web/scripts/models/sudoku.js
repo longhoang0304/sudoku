@@ -5,7 +5,7 @@ class Sudoku {
   #difficulty
 
   static #DIFFICULTY_MAP = {
-    'easy': [35, 40],
+    'easy': [1, 1],
     'medium': [40, 45],
     'hard': [45, 50],
     'expert': [50, 55],

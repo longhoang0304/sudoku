@@ -174,16 +174,16 @@
   display: flex;
 }
 
-#header {
+#header, .game-over__button {
   color: var(--base-color);
   font-weight: bold;
 }
 
-.header__item, .status__item {
+.header__item, .status__item, .game-over__button {
   cursor: pointer;
 }
 
-.header__item:hover {
+.header__item:hover, .game-over__button:hover {
   text-decoration: underline;
 }
 

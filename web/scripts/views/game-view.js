@@ -207,7 +207,16 @@ class GameView {
   }
 
   renderCompletedBoard = () => {
+    const [row, col] = [0, 0]
 
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < i + 1; j++) {
+        setTimeout(() => this.renderScoreCell(row + i, col + j), 75 * i)
+      }
+      for (let j = 0; j < i; j++) {
+        setTimeout(() => this.renderScoreCell(row + j, col + i), 75 * i)
+      }
+    }
   }
 
   // ===================================
@@ -357,8 +366,11 @@ class GameView {
 
   registerNewGameHandler = () => {
     const header = document.getElementById('header')
-    const newGameEle = header.children[1]
+    let newGameEle = header.children[1]
     newGameEle.onclick = this.#difficultyPopup.toggleDifficultyMenu
+
+    const gameOverBtn = document.getElementsByClassName('game-over__button')
+    gameOverBtn[0].onclick = this.#difficultyPopup.toggleDifficultyMenu
   }
 
   registerRestartBtnPressedHandler = () => {
@@ -382,6 +394,9 @@ class GameView {
   registerBackToHomeBtnPressedHandler = () => {
     const header = document.getElementById('header')
     header.children[0].onclick = this.backToHome
+
+    const gameOverBtn = document.getElementsByClassName('game-over__button')
+    gameOverBtn[1].onclick = this.backToHome
   }
 
   restartGame = () => {
