@@ -121,11 +121,12 @@ class GameViewModel extends Observable {
     this.PropertyChanged('ActiveCellData')
     this.PropertyChanged('ActiveCell', prevValue)
 
-    this.CheckGameGameStatus()
     const newCompletedSets = this.#gameManager.CompletedSets.map(e => e.size)
     if (newCompletedSets[0] > completedSets[0]) this.PropertyChanged('RowCompleted')
     if (newCompletedSets[1] > completedSets[1]) this.PropertyChanged('ColCompleted')
     if (newCompletedSets[2] > completedSets[2]) this.PropertyChanged('BlockCompleted')
+
+    this.CheckGameGameStatus()
   }
 
   CheckGameGameStatus = () => {

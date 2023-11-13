@@ -186,6 +186,15 @@ class Sudoku {
     }
   }
 
+  Won = () => {
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        if (this.#activeBoard[i][j] !== this.#expectedBoard[i][j]) return false
+      }
+    }
+    return true
+  }
+
   ToJson() {
     return {
       activeBoard: this.#activeBoard,

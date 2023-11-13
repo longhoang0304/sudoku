@@ -245,6 +245,11 @@ class GameManager {
     this.#checkActiveCellMistakes(false)
     this.#rewardScore()
 
+    if (this.#sudoku.Won()) {
+      this.#status = 'won'
+      return true
+    }
+
     if (this.#mistakes > this.#allowedMistakes) {
       this.#status = 'lose'
     }
