@@ -5,7 +5,7 @@ class Sudoku {
   #difficulty
 
   static #DIFFICULTY_MAP = {
-    'easy': [1, 1],
+    'easy': [35, 40],
     'medium': [40, 45],
     'hard': [45, 50],
     'expert': [50, 55],
@@ -49,7 +49,18 @@ class Sudoku {
       board.push([...this.#expectedBoard[i]])
     }
 
-    while (noCells) {
+    for (let i = 0; i < 9; i++) {
+      let x = randInt(0, 9)
+      let y = randInt(0, 9)
+      while (!board[i][x]) x = randInt(0, 9)
+      board[i][x] = 0
+
+      while (!board[i][y]) y = randInt(0, 9)
+      board[y][i] = 0
+      noCells -= 2
+    }
+
+    while (noCells >= 0) {
       const x = randInt(0, 9)
       const y = randInt(0, 9)
       const k = x * 9 + y
