@@ -30,13 +30,13 @@ class Sudoku {
     return this.#difficulty
   }
 
-  #genCompleteBoard() {
+  #initExpectedBoard() {
     this.#expectedBoard = []
 
     for (let i = 0; i < 9; i++) {
       const row = []
       for (let j = 0; j < 9; j++) {
-        row.push(randInt(1, 10))
+        row.push(0)
       }
       this.#expectedBoard.push(row)
     }
@@ -60,6 +60,24 @@ class Sudoku {
     }
 
     return board
+  }
+
+  #getFillableValues = (row, col) => {
+    const board = this.#expectedBoard
+    const blockRow = Math.floor(row / 3) * 3
+    const blockCol = Math.floor(col / 3) * 3
+    const fillableValues = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+    for (let i = 0; i < 9; i++) {
+      if (board[i][col]) fillableValues.delete(board[i][col])
+      if (board[row][i]) fillableValues.delete(board[row][i])
+      // check square
+      let x = blockRow + Math.floor(i / 3)
+      let y = blockCol + (i % 3)
+      if (board[x][y]) fillableValues.delete(board[x][y])
+    }
+
+    return fillableValues
   }
 
   SearchDuplicatedCells = (row, col) => {
@@ -100,7 +118,8 @@ class Sudoku {
     const [min, max] = Sudoku.#DIFFICULTY_MAP[this.#difficulty]
     const noCells = randInt(min, max + 1)
     
-    this.#genCompleteBoard()
+    this.#initExpectedBoard()
+    this.Solve()
     this.#initBoard = this.#removeCells(noCells)
     this.#activeBoard = []
 
@@ -110,7 +129,29 @@ class Sudoku {
   }
 
   Solve() {
-    
+    const board = this.#expectedBoard
+
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (board[r][c]) continue
+
+        const fillableValues = this.#getFillableValues(r, c)
+        let fSize = fillableValues.size
+
+        if (!fSize) return false // not solvable
+        while (fSize) {
+          const v = [...fillableValues][randInt(0, fSize)]
+          board[r][c] = v
+
+          if (this.Solve()) break
+
+          board[r][c] = 0
+          fillableValues.delete(v)
+          fSize = fillableValues.size
+        }
+      }
+    }
+    return true
   }
 
   Reset() {
