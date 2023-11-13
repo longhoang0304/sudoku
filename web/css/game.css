@@ -55,6 +55,7 @@
 }
 
 .game-board__col.activated {
+  --current-bg-value: #e2ebf3;
   background: #e2ebf3;
 }
 
@@ -67,6 +68,7 @@
 }
 
 .game-board__col.selected {
+  --current-bg-value: #bbdefb;
   background: #bbdefb;
 }
 
@@ -76,6 +78,24 @@
 
 .game-board__col.input-correct {
   color: #325aaf;
+}
+
+@keyframes score-animated {
+  100% {
+    background-color: var(--current-bg-value);
+  }
+  50% {
+    background-color: #b1c4d9;
+  }
+  100% {
+    background-color: var(--current-bg-value);
+  }
+}
+
+.game-board__col.score {
+  animation: score-animated;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in-out;
 }
 
 .game-board__col .game-board__col__data, .game-board__col .game-board__col__note {

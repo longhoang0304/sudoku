@@ -122,7 +122,9 @@ class GameView {
         this.renderCellData(i, j, sudokuBoard[i][j])
       }
     }
+
     if (this.#gamevm.GameOver) return
+
     this.activeSelectedCell(this.#gamevm.ActiveCellData)
   }
 
@@ -162,6 +164,50 @@ class GameView {
 
     const gameOverScore = document.getElementById('game-over__score')
     gameOverScore.children[1].innerText = this.#gamevm.Score
+  }
+
+  renderScoreRow = () => {
+    const { row, col } = this.#gamevm.ActiveCellData
+    for (let i = 0; i < 9; i++) {
+      if (!i) {
+        setTimeout(() => this.renderScoreCell(row, col))
+        continue
+      }
+      setTimeout(() => this.renderScoreCell(row, col - i), 75 * i)
+      setTimeout(() => this.renderScoreCell(row, col + i), 75 * i)
+    }
+  }
+
+  renderScoreCol = () => {
+    const { row, col } = this.#gamevm.ActiveCellData
+    for (let i = 0; i < 9; i++) {
+      if (!i) {
+        setTimeout(() => this.renderScoreCell(row, col))
+        continue
+      }
+      setTimeout(() => this.renderScoreCell(row - i, col), 75 * i)
+      setTimeout(() => this.renderScoreCell(row + i, col), 75 * i)
+    }
+  }
+
+  renderScoreBlock = () => {
+    const { row, col } = this.#gamevm.ActiveCellData
+    const baseRow = Math.floor(row / 3) * 3
+    const baseCol = Math.floor(col / 3) * 3
+
+    for (let i = 0; i < 9; i++) {
+      if (!i) {
+        setTimeout(() => this.renderScoreCell(baseRow, baseCol))
+        continue
+      }
+      const x = baseRow + Math.floor(i / 3)
+      const y = baseCol + i % 3
+      setTimeout(() => this.renderScoreCell(x, y), 75 * i)
+    }
+  }
+
+  renderCompletedBoard = () => {
+
   }
 
   // ===================================
@@ -375,6 +421,10 @@ class GameView {
     this.#gamevm.AddPropertyChangedListener('Game', this.renderUI)
     this.#gamevm.AddPropertyChangedListener('GameOver', this.renderGameOver)
     this.#gamevm.AddPropertyChangedListener('GameOver', this.renderBoard)
+    this.#gamevm.AddPropertyChangedListener('RowCompleted', this.renderScoreRow)
+    this.#gamevm.AddPropertyChangedListener('ColCompleted', this.renderScoreCol)
+    this.#gamevm.AddPropertyChangedListener('BlockCompleted', this.renderScoreBlock)
+    this.#gamevm.AddPropertyChangedListener('BoardCompleted', this.renderCompletedBoard)
   }
 
   // ===================================
@@ -463,6 +513,16 @@ class GameView {
 
     const cellDataElement = isFill ? this.createCellDataElement(data) : this.createCellNoteElement(data)
     cell.replaceChildren(cellDataElement)
+  }
+
+  renderScoreCell = (row, col) => {
+    if (col < 0 || col > 8) return
+    if (row < 0 || row > 8) return
+
+    const cellEle = this.#uiBoard[row][col]
+    if (cellEle.classList.contains('score')) return
+    cellEle.classList.add('score')
+    setTimeout(() => cellEle.classList.remove('score'), 500)
   }
 }
 

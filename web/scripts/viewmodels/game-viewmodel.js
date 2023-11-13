@@ -113,6 +113,7 @@ class GameViewModel extends Observable {
     this.Paused && this.ResumeGame()
 
     const prevValue = this.ActiveCellData
+    const completedSets = this.#gameManager.CompletedSets.map(e => e.size)
     if (!this.#gameManager.UpdateActiveCellData(cellData)) return
     this.PropertyChanged('Score')
     this.PropertyChanged('Mistakes')
@@ -121,6 +122,10 @@ class GameViewModel extends Observable {
     this.PropertyChanged('ActiveCell', prevValue)
 
     this.CheckGameGameStatus()
+    const newCompletedSets = this.#gameManager.CompletedSets.map(e => e.size)
+    if (newCompletedSets[0] > completedSets[0]) this.PropertyChanged('RowCompleted')
+    if (newCompletedSets[1] > completedSets[1]) this.PropertyChanged('ColCompleted')
+    if (newCompletedSets[2] > completedSets[2]) this.PropertyChanged('BlockCompleted')
   }
 
   CheckGameGameStatus = () => {

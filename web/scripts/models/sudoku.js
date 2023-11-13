@@ -104,6 +104,25 @@ class Sudoku {
     return errors
   }
 
+  CheckCompleteStatus = (row, col) => {
+    const blockRow = Math.floor(row / 3) * 3
+    const blockCol = Math.floor(col / 3) * 3
+    const completedRow = new Set()
+    const completedCol = new Set()
+    const completedBlk = new Set()
+
+    for (let i = 0; i < 9; i++) {
+      if (this.#activeBoard[i][col]) completedCol.add(this.#activeBoard[i][col])
+      if (this.#activeBoard[row][i]) completedRow.add(this.#activeBoard[row][i])
+
+      let x = blockRow + Math.floor(i / 3)
+      let y = blockCol + (i % 3)
+      if (this.#activeBoard[x][y]) completedBlk.add(this.#activeBoard[x][y])
+    }
+
+    return [completedRow.size === 9, completedCol.size === 9, completedBlk.size === 9]
+  }
+
   UpdateCellValue = (row, col, cellValue) => {
     this.#activeBoard[row][col] = cellValue
   }
@@ -137,18 +156,23 @@ class Sudoku {
 
         const fillableValues = this.#getFillableValues(r, c)
         let fSize = fillableValues.size
+        let found = false
 
         if (!fSize) return false // not solvable
         while (fSize) {
           const v = [...fillableValues][randInt(0, fSize)]
           board[r][c] = v
 
-          if (this.Solve()) break
+          if (this.Solve()) {
+            found = true
+            break
+          }
 
           board[r][c] = 0
           fillableValues.delete(v)
           fSize = fillableValues.size
         }
+        if (!found) return false
       }
     }
     return true

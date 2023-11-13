@@ -1,7 +1,7 @@
 class GameManager {
   #sudoku = null
   #date = null
-  #histories = []
+  #histories = null
   #mistakes = 0
   #usedHints = 0
   #activeCell = [0, 0]
@@ -10,13 +10,16 @@ class GameManager {
   #score = 0
   #status = 'started'
   #mode = 'fill'
-  #allowedMistakes = 5
-  #allowedHints = 5
   #maxScore = 0
   #thinkingStart = null
-  #scoreDeduction = 5
-  #thinkingInterval = 5
   #scoredCells = null
+  #completedRows = null
+  #completedCols = null
+  #completedBlks = null
+  #allowedMistakes = 5
+  #allowedHints = 5
+  static #SCORE_DEDUCTION = 5
+  static #THINKING_INTERVAL = 5
   static #MAX_SCORE_MAP = {
     'easy': 25,
     'medium': 50,
@@ -72,6 +75,10 @@ class GameManager {
     return this.#gameBoard
   }
 
+    get CompletedSets() {
+    return [this.#completedRows, this.#completedCols, this.#completedBlks]
+  }
+
   set Duration(newValue) {
     this.#duration = newValue
   }
@@ -94,6 +101,9 @@ class GameManager {
     this.#thinkingStart = new Date()
     this.#maxScore = GameManager.#MAX_SCORE_MAP[this.#sudoku.Difficulty]
     this.#gameBoard = [...new Array(9)].map(() => [...new Array(9)])
+    this.#completedRows = new Set()
+    this.#completedCols = new Set()
+    this.#completedBlks = new Set()
     for (let i = 0; i < 9; i++) {
       for (let j = 0; j < 9; j++) {
         const isDefault = !!this.#sudoku.CurrentBoard[i][j]
@@ -113,11 +123,29 @@ class GameManager {
     const cellKey = row * 9 + col
 
     if (this.#scoredCells.has(cellKey)) return
+    if (!cellData.correct) return
 
-    const thinkingTimeGap = Math.floor((new Date() - this.#thinkingStart) / (this.#thinkingInterval * 1000))
-    const score = Math.max(this.#scoreDeduction, this.#maxScore - thinkingTimeGap * this.#scoreDeduction)
+    const thinkingTimeGap = Math.floor((new Date() - this.#thinkingStart) / (GameManager.#THINKING_INTERVAL * 1000))
+    let score = Math.max(GameManager.#SCORE_DEDUCTION, this.#maxScore - thinkingTimeGap * GameManager.#SCORE_DEDUCTION)
+    const [completedRow, completedCol, completedBlk] = this.#sudoku.CheckCompleteStatus(row, col)
 
-    if (cellData.correct) this.#score += score
+    if (completedRow && !this.#completedRows.has(row)) {
+      this.#completedRows.add(row)
+      score += this.#maxScore * 4
+    }
+
+    if (completedCol && !this.#completedCols.has(col)) {
+      this.#completedCols.add(col)
+      score += this.#maxScore * 4
+    }
+
+    const blockKey = Math.floor(row / 3) * 3 * 9 + Math.floor(col / 3) * 3
+    if (completedBlk && !this.#completedRows.has(blockKey)) {
+      this.#completedBlks.add(blockKey)
+      score += this.#maxScore * 4
+    }
+
+    this.#score += score
     this.#thinkingStart = new Date()
     this.#scoredCells.add(cellKey)
   }
@@ -279,13 +307,10 @@ class GameManager {
     const expectedBoard = this.#sudoku.ExpectedBoard
     let x, y
 
-    while (true) {
+    do {
       x = randInt(0, 9)
       y = randInt(0, 9)
-
-      if (this.#gameBoard[x][y].type === 'pre-filled') continue
-      break
-    }
+    } while (this.#gameBoard[x][y].type === 'pre-filled');
 
     this.#usedHints += 1
     this.SelectCell(x, y)
